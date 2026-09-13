@@ -1,37 +1,258 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Attendance System</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Attendance System</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #123c69;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 25px auto;
+      padding: 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #123c69;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #123c69;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #0b2d50;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #123c69;
+      color: white;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+
+    .late {
+      color: red;
+      font-weight: bold;
+    }
+
+    .qr {
+      text-align: center;
+      padding: 20px;
+      background: #eef3f8;
+      border-radius: 10px;
+    }
+  </style>
 </head>
 
 <body>
 
-    <h1>Staff Attendance System</h1>
+<header>
+  <h1>Staff Attendance System</h1>
+  <p>Daily Staff Attendance & Punctuality Report</p>
+</header>
 
-    <p>Scan the QR code to view staff attendance.</p>
+<div class="container">
 
-    <h2>Today's Attendance</h2>
+  <div class="card">
+    <h2>Staff Check-In</h2>
 
-    <table border="1">
+    <input type="text" id="staffName" placeholder="Enter staff name">
+
+    <button onclick="checkIn()">
+      Scan QR / Check In
+    </button>
+
+    <p id="message"></p>
+  </div>
+
+  <div class="card">
+    <h2>Staff Check-Out</h2>
+
+    <input type="text" id="checkoutName" placeholder="Enter staff name">
+
+    <button onclick="checkOut()">
+      Check Out
+    </button>
+
+    <p id="checkoutMessage"></p>
+  </div>
+
+  <div class="card">
+    <h2>Today's Attendance Report</h2>
+
+    <table>
+      <thead>
         <tr>
-            <th>Staff Name</th>
-            <th>Date</th>
-            <th>Arrival Time</th>
-            <th>Closing Time</th>
-            <th>Status</th>
+          <th>Staff Name</th>
+          <th>Date</th>
+          <th>Arrival</th>
+          <th>Status</th>
+          <th>Closing</th>
         </tr>
+      </thead>
 
-        <tr>
-            <td>John Mensah</td>
-            <td>2026-09-13</td>
-            <td>07:55 AM</td>
-            <td>05:00 PM</td>
-            <td>On Time</td>
-        </tr>
-
+      <tbody id="attendanceTable">
+      </tbody>
     </table>
+  </div>
+
+</div>
+
+<script>
+
+let attendance = [];
+
+function checkIn() {
+
+  const name = document.getElementById("staffName").value.trim();
+
+  if (name === "") {
+    alert("Please enter the staff name.");
+    return;
+  }
+
+  const now = new Date();
+
+  const date = now.toLocaleDateString();
+  const time = now.toLocaleTimeString();
+
+  const hour = now.getHours();
+
+  let status;
+
+  if (hour < 8) {
+    status = "Punctual";
+  } else {
+    status = "Late";
+  }
+
+  attendance.push({
+    name: name,
+    date: date,
+    arrival: time,
+    status: status,
+    closing: "-"
+  });
+
+  document.getElementById("message").innerHTML =
+    "Check-in successful for " + name;
+
+  document.getElementById("staffName").value = "";
+
+  displayAttendance();
+}
+
+
+function checkOut() {
+
+  const name = document.getElementById("checkoutName").value.trim();
+
+  if (name === "") {
+    alert("Please enter the staff name.");
+    return;
+  }
+
+  const now = new Date();
+  const time = now.toLocaleTimeString();
+
+  const staff = attendance.find(
+    person => person.name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (!staff) {
+    alert("Staff member was not found.");
+    return;
+  }
+
+  staff.closing = time;
+
+  document.getElementById("checkoutMessage").innerHTML =
+    "Check-out successful for " + name;
+
+  document.getElementById("checkoutName").value = "";
+
+  displayAttendance();
+}
+
+
+function displayAttendance() {
+
+  const table = document.getElementById("attendanceTable");
+
+  table.innerHTML = "";
+
+  attendance.forEach(person => {
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${person.name}</td>
+      <td>${person.date}</td>
+      <td>${person.arrival}</td>
+      <td class="${person.status === "Late" ? "late" : "success"}">
+        ${person.status}
+      </td>
+      <td>${person.closing}</td>
+    `;
+
+    table.appendChild(row);
+
+  });
+}
+
+</script>
 
 </body>
 </html>
