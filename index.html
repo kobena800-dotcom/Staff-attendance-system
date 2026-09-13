@@ -3,36 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Company Staff Attendance</title>
+<title>Staff Attendance System</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
-
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #f2f5f9;
-  color: #222;
 }
 
 header {
   background: #123c69;
   color: white;
-  padding: 20px;
   text-align: center;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 25px;
+  padding: 25px 10px;
 }
 
 .container {
-  max-width: 700px;
+  max-width: 900px;
   margin: 20px auto;
-  padding: 15px;
+  padding: 10px;
 }
 
 .card {
@@ -40,24 +30,18 @@ header h1 {
   padding: 20px;
   margin-bottom: 20px;
   border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
 h2 {
-  margin-top: 0;
   color: #123c69;
 }
 
-label {
-  display: block;
-  margin-top: 12px;
-  font-weight: bold;
-}
-
-input, select {
+input {
   width: 100%;
-  padding: 12px;
-  margin-top: 6px;
+  padding: 13px;
+  margin: 8px 0 15px;
+  box-sizing: border-box;
   border: 1px solid #ccc;
   border-radius: 7px;
   font-size: 16px;
@@ -65,65 +49,48 @@ input, select {
 
 button {
   width: 100%;
-  padding: 13px;
-  margin-top: 15px;
+  padding: 14px;
+  margin-top: 5px;
   border: none;
   border-radius: 7px;
   background: #123c69;
   color: white;
   font-size: 16px;
-  cursor: pointer;
+  font-weight: bold;
 }
 
 button:hover {
-  background: #0d2e50;
+  opacity: 0.9;
 }
 
-.green {
-  background: #16823b;
+.checkout {
+  background: #b3261e;
 }
 
-.green:hover {
-  background: #10632c;
+.reportButton {
+  background: #176b2c;
 }
 
-.red {
-  background: #c62828;
-}
-
-.red:hover {
-  background: #9e1f1f;
-}
-
-.result {
+.message {
   margin-top: 15px;
-  padding: 15px;
-  background: #eef6ff;
-  border-radius: 8px;
+  padding: 12px;
+  border-radius: 7px;
   display: none;
-}
-
-.success {
-  color: #16823b;
-  font-weight: bold;
-}
-
-.error {
-  color: #c62828;
-  font-weight: bold;
+  background: #e6f4ea;
+  color: #176b2c;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 15px;
-  font-size: 14px;
 }
 
 th, td {
-  border: 1px solid #ddd;
-  padding: 8px;
+  border: 1px solid #ccc;
+  padding: 10px;
   text-align: left;
+  font-size: 14px;
 }
 
 th {
@@ -131,21 +98,17 @@ th {
   color: white;
 }
 
-#qrBox {
+.no-record {
   text-align: center;
+  padding: 15px;
+  color: #777;
 }
 
-#qrCode {
-  margin: 15px auto;
-  width: 220px;
-  min-height: 50px;
-}
-
-footer {
-  text-align: center;
-  padding: 20px;
-  color: #666;
-  font-size: 13px;
+@media(max-width:600px) {
+  th, td {
+    font-size: 11px;
+    padding: 7px;
+  }
 }
 </style>
 </head>
@@ -153,112 +116,428 @@ footer {
 <body>
 
 <header>
-  <h1>Company Staff Attendance System</h1>
-  <p>Secure Check-In & Check-Out</p>
+  <h1>Staff Attendance System</h1>
+  <p>Staff Check-In, Check-Out & Daily Report</p>
 </header>
 
 <div class="container">
 
-  <!-- STAFF CHECK-IN -->
-  <div class="card">
-    <h2>Staff Check-In</h2>
+<!-- CHECK IN -->
 
-    <label>Staff ID</label>
-    <input type="text" id="checkInStaffId" placeholder="Enter Staff ID">
+<div class="card">
 
-    <label>Staff Name</label>
-    <input type="text" id="checkInName" placeholder="Enter full name">
+<h2>Staff Check-In</h2>
 
-    <button class="green" onclick="checkIn()">
-      Check In
-    </button>
+<label>Staff Name</label>
 
-    <div id="checkInResult" class="result"></div>
-  </div>
+<input
+  type="text"
+  id="name"
+  placeholder="Enter staff name"
+>
 
+<label>Staff ID</label>
 
-  <!-- STAFF CHECK-OUT -->
-  <div class="card">
-    <h2>Staff Check-Out</h2>
+<input
+  type="text"
+  id="staffId"
+  placeholder="Enter staff ID"
+>
 
-    <label>Staff ID</label>
-    <input type="text" id="checkOutStaffId" placeholder="Enter Staff ID">
+<button onclick="checkIn()">
+  CHECK IN
+</button>
 
-    <label>Staff Name</label>
-    <input type="text" id="checkOutName" placeholder="Enter full name">
-
-    <button class="red" onclick="checkOut()">
-      Check Out
-    </button>
-
-    <div id="checkOutResult" class="result"></div>
-  </div>
-
-
-  <!-- COMPANY QR -->
-  <div class="card" id="qrBox">
-    <h2>Company Attendance QR Code</h2>
-
-    <p>
-      Staff can scan this company QR code to open the attendance system.
-    </p>
-
-    <div id="qrCode"></div>
-
-    <button onclick="generateQR()">
-      Generate / Refresh QR Code
-    </button>
-  </div>
-
-
-  <!-- DAILY REPORT -->
-  <div class="card">
-    <h2>Daily Staff Report</h2>
-
-    <button onclick="showReport()">
-      View Today's Report
-    </button>
-
-    <button onclick="clearRecords()" class="red">
-      Clear Attendance Records
-    </button>
-
-    <div id="report" class="result"></div>
-  </div>
+<div id="inMessage" class="message"></div>
 
 </div>
 
-<footer>
-  Company Attendance System
-</footer>
+
+<!-- CHECK OUT -->
+
+<div class="card">
+
+<h2>Staff Check-Out</h2>
+
+<label>Staff ID</label>
+
+<input
+  type="text"
+  id="outId"
+  placeholder="Enter staff ID"
+>
+
+<button
+  class="checkout"
+  onclick="checkOut()"
+>
+  CHECK OUT
+</button>
+
+<div id="outMessage" class="message"></div>
+
+</div>
+
+
+<!-- REPORT -->
+
+<div class="card">
+
+<h2>Daily Staff Report</h2>
+
+<button
+  class="reportButton"
+  onclick="showReport()"
+>
+  SHOW DAILY REPORT
+</button>
+
+<div id="report">
+  <div class="no-record">
+    Tap "SHOW DAILY REPORT" to view attendance.
+  </div>
+</div>
+
+</div>
+
+</div>
 
 
 <script>
 
-/* ================================
+/* =========================
    ATTENDANCE STORAGE
-================================ */
+========================= */
 
-let attendance =
-  JSON.parse(localStorage.getItem("attendanceRecords")) || [];
+function getRecords() {
 
+  let saved =
+    localStorage.getItem("staffAttendance");
 
-/* ================================
-   GET TODAY'S DATE
-================================ */
+  if (saved === null) {
+    return [];
+  }
 
-function getToday() {
-  const now = new Date();
-
-  return now.toLocaleDateString();
+  return JSON.parse(saved);
 }
 
 
-/* ================================
-   GET CURRENT TIME
-================================ */
+function saveRecords(records) {
+
+  localStorage.setItem(
+    "staffAttendance",
+    JSON.stringify(records)
+  );
+
+}
+
+
+/* =========================
+   DATE & TIME
+========================= */
+
+function getDate() {
+
+  let now = new Date();
+
+  return now.toLocaleDateString();
+
+}
+
 
 function getTime() {
-  const now = new Date();
 
- 
+  let now = new Date();
+
+  return now.toLocaleTimeString();
+
+}
+
+
+/* =========================
+   CHECK IN
+========================= */
+
+function checkIn() {
+
+  let name =
+    document.getElementById("name").value.trim();
+
+  let staffId =
+    document.getElementById("staffId").value.trim();
+
+  let message =
+    document.getElementById("inMessage");
+
+
+  if (name === "" || staffId === "") {
+
+    alert("Please enter Staff Name and Staff ID.");
+
+    return;
+
+  }
+
+
+  let records = getRecords();
+
+  let today = getDate();
+
+
+  /* Check for existing check-in */
+
+  let existing =
+    records.find(function(record) {
+
+      return (
+        record.staffId === staffId &&
+        record.date === today
+      );
+
+    });
+
+
+  if (existing) {
+
+    alert(
+      "This staff member has already checked in today."
+    );
+
+    return;
+
+  }
+
+
+  /* Create new attendance record */
+
+  let newRecord = {
+
+    name: name,
+
+    staffId: staffId,
+
+    date: today,
+
+    checkIn: getTime(),
+
+    checkOut: "",
+
+    status: "Present"
+
+  };
+
+
+  records.push(newRecord);
+
+  saveRecords(records);
+
+
+  message.style.display = "block";
+
+  message.innerHTML =
+    "✓ " + name +
+    " successfully checked in at " +
+    newRecord.checkIn;
+
+
+  /* Clear form */
+
+  document.getElementById("name").value = "";
+
+  document.getElementById("staffId").value = "";
+
+
+  /* Automatically show report */
+
+  showReport();
+
+}
+
+
+/* =========================
+   CHECK OUT
+========================= */
+
+function checkOut() {
+
+  let staffId =
+    document.getElementById("outId").value.trim();
+
+  let message =
+    document.getElementById("outMessage");
+
+
+  if (staffId === "") {
+
+    alert("Please enter Staff ID.");
+
+    return;
+
+  }
+
+
+  let records = getRecords();
+
+  let today = getDate();
+
+
+  /* Find staff record */
+
+  let record =
+    records.find(function(item) {
+
+      return (
+        item.staffId === staffId &&
+        item.date === today
+      );
+
+    });
+
+
+  if (!record) {
+
+    alert(
+      "No check-in record found for this Staff ID today."
+    );
+
+    return;
+
+  }
+
+
+  if (record.checkOut !== "") {
+
+    alert(
+      "This staff member has already checked out today."
+    );
+
+    return;
+
+  }
+
+
+  record.checkOut = getTime();
+
+  saveRecords(records);
+
+
+  message.style.display = "block";
+
+  message.innerHTML =
+    "✓ Staff " +
+    staffId +
+    " successfully checked out at " +
+    record.checkOut;
+
+
+  document.getElementById("outId").value = "";
+
+
+  /* Automatically show report */
+
+  showReport();
+
+}
+
+
+/* =========================
+   DAILY REPORT
+========================= */
+
+function showReport() {
+
+  let report =
+    document.getElementById("report");
+
+  let records = getRecords();
+
+  let today = getDate();
+
+
+  let todayRecords =
+    records.filter(function(record) {
+
+      return record.date === today;
+
+    });
+
+
+  if (todayRecords.length === 0) {
+
+    report.innerHTML =
+
+      '<div class="no-record">' +
+      'No attendance records for today.' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  let html =
+
+    "<table>" +
+
+    "<tr>" +
+
+    "<th>Staff Name</th>" +
+    "<th>Staff ID</th>" +
+    "<th>Date</th>" +
+    "<th>Arrival</th>" +
+    "<th>Closing</th>" +
+    "<th>Status</th>" +
+
+    "</tr>";
+
+
+  todayRecords.forEach(function(record) {
+
+    html +=
+
+      "<tr>" +
+
+      "<td>" +
+      record.name +
+      "</td>" +
+
+      "<td>" +
+      record.staffId +
+      "</td>" +
+
+      "<td>" +
+      record.date +
+      "</td>" +
+
+      "<td>" +
+      record.checkIn +
+      "</td>" +
+
+      "<td>" +
+      (
+        record.checkOut === ""
+        ? "Not checked out"
+        : record.checkOut
+      ) +
+      "</td>" +
+
+      "<td>" +
+      record.status +
+      "</td>" +
+
+      "</tr>";
+
+  });
+
+
+  html += "</table>";
+
+
+  report.innerHTML = html;
+
+}
+
+</script>
+
+</body>
+</html>
