@@ -1559,3 +1559,84 @@
     RESET PASSWORD
   </button>
 </div>
+// ================= PASSWORD RESET =================
+
+const ADMIN_RESET_CODE = "RESET2026";
+
+function showResetPassword() {
+  document.getElementById("resetPasswordBox").classList.remove("hidden");
+}
+
+function hideResetPassword() {
+  document.getElementById("resetPasswordBox").classList.add("hidden");
+
+  document.getElementById("resetCode").value = "";
+  document.getElementById("newAdminPassword").value = "";
+  document.getElementById("confirmAdminPassword").value = "";
+}
+
+function resetAdminPassword() {
+
+  const resetCode =
+    document.getElementById("resetCode").value.trim();
+
+  const newPassword =
+    document.getElementById("newAdminPassword").value;
+
+  const confirmPassword =
+    document.getElementById("confirmAdminPassword").value;
+
+
+  if (resetCode !== ADMIN_RESET_CODE) {
+    showResetMessage("❌ Wrong reset code.", "error");
+    return;
+  }
+
+
+  if (newPassword.length < 6) {
+    showResetMessage(
+      "❌ Password must be at least 6 characters.",
+      "error"
+    );
+    return;
+  }
+
+
+  if (newPassword !== confirmPassword) {
+    showResetMessage(
+      "❌ Passwords do not match.",
+      "error"
+    );
+    return;
+  }
+
+
+  localStorage.setItem("adminPassword", newPassword);
+
+
+  showResetMessage(
+    "✅ Password reset successfully!",
+    "success"
+  );
+
+
+  setTimeout(function() {
+    hideResetPassword();
+  }, 2000);
+}
+
+
+function showResetMessage(message, type) {
+
+  const box = document.getElementById("resetMessage");
+
+  box.textContent = message;
+
+  box.className = "message";
+
+  if (type === "error") {
+    box.classList.add("error");
+  }
+
+  box.style.display = "block";
+}
