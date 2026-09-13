@@ -993,4 +993,2760 @@
 
   /* =========================================================
      GLOBAL VARIABLES
-  =======
+  ========================================================= */
+
+  let qrScannerActive = false;
+
+  let qrScannerOutActive = false;
+
+  let deleteStaffId = null;
+
+  let adminLoggedIn = false;
+
+
+  /* =========================================================
+     INITIALIZATION
+  ========================================================= */
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+    initializeDatabase();
+
+    setDefaultDates();
+
+    updateStaffDropdown();
+
+    displayStaffList();
+
+    updateAdminStats();
+
+  });
+
+
+  /* =========================================================
+     DATABASE INITIALIZATION
+  ========================================================= */
+
+  function initializeDatabase() {
+
+    if (!localStorage.getItem(STAFF_KEY)) {
+
+      const defaultStaff = [];
+
+      localStorage.setItem(
+        STAFF_KEY,
+        JSON.stringify(defaultStaff)
+      );
+
+    }
+
+    if (!localStorage.getItem(RECORDS_KEY)) {
+
+      localStorage.setItem(
+        RECORDS_KEY,
+        JSON.stringify([])
+      );
+
+    }
+
+    if (!localStorage.getItem(PASSWORD_KEY)) {
+
+      localStorage.setItem(
+        PASSWORD_KEY,
+        DEFAULT_ADMIN_PASSWORD
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     GET STAFF
+  ========================================================= */
+
+  function getStaff() {
+
+    try {
+
+      return JSON.parse(
+        localStorage.getItem(STAFF_KEY)
+      ) || [];
+
+    } catch (error) {
+
+      return [];
+
+    }
+
+  }
+
+
+  /* =========================================================
+     SAVE STAFF
+  ========================================================= */
+
+  function saveStaff(staff) {
+
+    localStorage.setItem(
+      STAFF_KEY,
+      JSON.stringify(staff)
+    );
+
+  }
+
+
+  /* =========================================================
+     GET RECORDS
+  ========================================================= */
+
+  function getRecords() {
+
+    try {
+
+      return JSON.parse(
+        localStorage.getItem(RECORDS_KEY)
+      ) || [];
+
+    } catch (error) {
+
+      return [];
+
+    }
+
+  }
+
+
+  /* =========================================================
+     SAVE RECORDS
+  ========================================================= */
+
+  function saveRecords(records) {
+
+    localStorage.setItem(
+      RECORDS_KEY,
+      JSON.stringify(records)
+    );
+
+  }
+
+
+  /* =========================================================
+     TAB NAVIGATION
+  ========================================================= */
+
+  function switchTab(tabName, button) {
+
+    const cards = document.querySelectorAll(".card");
+
+    cards.forEach(card => {
+      card.classList.remove("active");
+    });
+
+
+    const buttons = document.querySelectorAll(".tab-btn");
+
+    buttons.forEach(btn => {
+      btn.classList.remove("active");
+    });
+
+
+    const target = document.getElementById(tabName);
+
+    if (target) {
+      target.classList.add("active");
+    }
+
+
+    if (button) {
+      button.classList.add("active");
+    }
+
+
+    stopCamera();
+
+    stopCameraCheckout();
+
+
+    if (tabName === "report") {
+      showReport();
+    }
+
+
+    if (tabName === "register") {
+      displayStaffList();
+    }
+
+
+    if (tabName === "admin") {
+
+      updateAdminStats();
+
+      if (adminLoggedIn) {
+        refreshAdminPanel();
+      }
+
+    }
+
+  }
+
+
+  /* =========================================================
+     CAMERA CHECK-IN
+  ========================================================= */
+
+  function startCamera() {
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+
+      showMessage(
+        document.getElementById("inMessage"),
+        "❌ Camera is not supported by this browser.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    stopCamera();
+
+    qrScannerActive = true;
+
+    const video = document.getElementById("qrVideo");
+
+
+    navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: {
+          ideal: "environment"
+        }
+      },
+      audio: false
+    })
+
+    .then(stream => {
+
+      video.srcObject = stream;
+
+      video.play();
+
+      scanQRCode();
+
+    })
+
+    .catch(error => {
+
+      qrScannerActive = false;
+
+      showMessage(
+        document.getElementById("inMessage"),
+        "❌ Cannot access camera: " + error.message,
+        "error"
+      );
+
+    });
+
+  }
+
+
+  /* =========================================================
+     STOP CHECK-IN CAMERA
+  ========================================================= */
+
+  function stopCamera() {
+
+    qrScannerActive = false;
+
+    const video = document.getElementById("qrVideo");
+
+    if (video && video.srcObject) {
+
+      video.srcObject
+        .getTracks()
+        .forEach(track => track.stop());
+
+      video.srcObject = null;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     CAMERA CHECK-OUT
+  ========================================================= */
+
+  function startCameraCheckout() {
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "❌ Camera is not supported by this browser.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    stopCameraCheckout();
+
+    qrScannerOutActive = true;
+
+    const video = document.getElementById("qrVideoOut");
+
+
+    navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: {
+          ideal: "environment"
+        }
+      },
+      audio: false
+    })
+
+    .then(stream => {
+
+      video.srcObject = stream;
+
+      video.play();
+
+      scanQRCodeCheckout();
+
+    })
+
+    .catch(error => {
+
+      qrScannerOutActive = false;
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "❌ Cannot access camera: " + error.message,
+        "error"
+      );
+
+    });
+
+  }
+
+
+  /* =========================================================
+     STOP CHECK-OUT CAMERA
+  ========================================================= */
+
+  function stopCameraCheckout() {
+
+    qrScannerOutActive = false;
+
+    const video = document.getElementById("qrVideoOut");
+
+    if (video && video.srcObject) {
+
+      video.srcObject
+        .getTracks()
+        .forEach(track => track.stop());
+
+      video.srcObject = null;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     SCAN CHECK-IN QR
+  ========================================================= */
+
+  function scanQRCode() {
+
+    const video = document.getElementById("qrVideo");
+
+    const canvas = document.getElementById("qrCanvas");
+
+    const ctx = canvas.getContext("2d");
+
+
+    const scan = () => {
+
+      if (!qrScannerActive) {
+        return;
+      }
+
+
+      if (
+        video.readyState === video.HAVE_ENOUGH_DATA &&
+        video.videoWidth > 0 &&
+        video.videoHeight > 0
+      ) {
+
+        canvas.width = video.videoWidth;
+
+        canvas.height = video.videoHeight;
+
+
+        ctx.drawImage(
+          video,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+
+        const imageData = ctx.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+
+        if (typeof jsQR !== "undefined") {
+
+          const code = jsQR(
+            imageData.data,
+            imageData.width,
+            imageData.height
+          );
+
+
+          if (code) {
+
+            processQRCodeCheckIn(code.data);
+
+            stopCamera();
+
+            return;
+
+          }
+
+        }
+
+      }
+
+
+      requestAnimationFrame(scan);
+
+    };
+
+
+    scan();
+
+  }
+
+
+  /* =========================================================
+     SCAN CHECK-OUT QR
+  ========================================================= */
+
+  function scanQRCodeCheckout() {
+
+    const video = document.getElementById("qrVideoOut");
+
+    const canvas = document.getElementById("qrCanvasOut");
+
+    const ctx = canvas.getContext("2d");
+
+
+    const scan = () => {
+
+      if (!qrScannerOutActive) {
+        return;
+      }
+
+
+      if (
+        video.readyState === video.HAVE_ENOUGH_DATA &&
+        video.videoWidth > 0 &&
+        video.videoHeight > 0
+      ) {
+
+        canvas.width = video.videoWidth;
+
+        canvas.height = video.videoHeight;
+
+
+        ctx.drawImage(
+          video,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+
+        const imageData = ctx.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+
+        if (typeof jsQR !== "undefined") {
+
+          const code = jsQR(
+            imageData.data,
+            imageData.width,
+            imageData.height
+          );
+
+
+          if (code) {
+
+            processQRCodeCheckOut(code.data);
+
+            stopCameraCheckout();
+
+            return;
+
+          }
+
+        }
+
+      }
+
+
+      requestAnimationFrame(scan);
+
+    };
+
+
+    scan();
+
+  }
+
+
+  /* =========================================================
+     SNAPSHOT CHECK-IN
+  ========================================================= */
+
+  function takeSnapshot() {
+
+    const video = document.getElementById("qrVideo");
+
+    const canvas = document.getElementById("qrCanvas");
+
+
+    if (!video.srcObject) {
+
+      showMessage(
+        document.getElementById("inMessage"),
+        "Start the camera first.",
+        "warning"
+      );
+
+      return;
+
+    }
+
+
+    if (!video.videoWidth) {
+
+      showMessage(
+        document.getElementById("inMessage"),
+        "Camera is not ready yet.",
+        "warning"
+      );
+
+      return;
+
+    }
+
+
+    canvas.style.display = "none";
+
+    canvas.width = video.videoWidth;
+
+    canvas.height = video.videoHeight;
+
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    const imageData = ctx.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    const code = jsQR(
+      imageData.data,
+      imageData.width,
+      imageData.height
+    );
+
+
+    if (code) {
+
+      processQRCodeCheckIn(code.data);
+
+      stopCamera();
+
+    } else {
+
+      showMessage(
+        document.getElementById("inMessage"),
+        "❌ No QR code detected. Try again.",
+        "error"
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     SNAPSHOT CHECK-OUT
+  ========================================================= */
+
+  function takeSnapshotCheckout() {
+
+    const video = document.getElementById("qrVideoOut");
+
+    const canvas = document.getElementById("qrCanvasOut");
+
+
+    if (!video.srcObject) {
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "Start the camera first.",
+        "warning"
+      );
+
+      return;
+
+    }
+
+
+    if (!video.videoWidth) {
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "Camera is not ready yet.",
+        "warning"
+      );
+
+      return;
+
+    }
+
+
+    canvas.width = video.videoWidth;
+
+    canvas.height = video.videoHeight;
+
+
+    const ctx = canvas.getContext("2d");
+
+
+    ctx.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    const imageData = ctx.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    const code = jsQR(
+      imageData.data,
+      imageData.width,
+      imageData.height
+    );
+
+
+    if (code) {
+
+      processQRCodeCheckOut(code.data);
+
+      stopCameraCheckout();
+
+    } else {
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "❌ No QR code detected. Try again.",
+        "error"
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     PROCESS CHECK-IN QR
+  ========================================================= */
+
+  function processQRCodeCheckIn(qrData) {
+
+    const staff = findStaffByQR(qrData);
+
+
+    if (!staff) {
+
+      showMessage(
+        document.getElementById("inMessage"),
+        "❌ Invalid staff QR code.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    checkInByStaff(staff);
+
+  }
+
+
+  /* =========================================================
+     PROCESS CHECK-OUT QR
+  ========================================================= */
+
+  function processQRCodeCheckOut(qrData) {
+
+    const staff = findStaffByQR(qrData);
+
+
+    if (!staff) {
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "❌ Invalid staff QR code.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    checkOutByStaff(staff);
+
+  }
+
+
+  /* =========================================================
+     FIND STAFF FROM QR
+  ========================================================= */
+
+  function findStaffByQR(qrData) {
+
+    const staff = getStaff();
+
+
+    return staff.find(person => {
+
+      const expectedQR =
+        "STAFF_ATTENDANCE|" + person.id;
+
+      return qrData === expectedQR;
+
+    });
+
+  }
+
+
+  /* =========================================================
+     MANUAL CHECK-IN
+  ========================================================= */
+
+  function checkIn() {
+
+    const staffId =
+      document.getElementById("staffId").value.trim();
+
+
+    if (!staffId) {
+
+      showMessage(
+        document.getElementById("inMessage"),
+        "Please select a staff member.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const staff = getStaff().find(
+      person => person.id.toLowerCase() === staffId.toLowerCase()
+    );
+
+
+    if (!staff) {
+
+      showMessage(
+        document.getElementById("inMessage"),
+        "Staff member not found.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    checkInByStaff(staff);
+
+  }
+
+
+  /* =========================================================
+     CHECK-IN LOGIC
+  ========================================================= */
+
+  function checkInByStaff(staff) {
+
+    const records = getRecords();
+
+    const now = new Date();
+
+    const date = formatDate(now);
+
+    const time = formatTime(now);
+
+
+    const existing = records.find(record =>
+
+      record.staffId === staff.id &&
+      record.date === date
+
+    );
+
+
+    if (existing && existing.checkIn) {
+
+      showMessage(
+        document.getElementById("inMessage"),
+        "⚠️ " + staff.name + " has already checked in today.",
+        "warning"
+      );
+
+      return;
+
+    }
+
+
+    const late = isLate(
+      time,
+      staff.checkInTime || WORK_START_TIME
+    );
+
+
+    const record = existing || {
+
+      id: generateId(),
+
+      staffId: staff.id,
+
+      staffName: staff.name,
+
+      department: staff.department || "",
+
+      date: date,
+
+      checkIn: null,
+
+      checkOut: null,
+
+      late: false
+
+    };
+
+
+    record.checkIn = time;
+
+    record.late = late;
+
+
+    if (!existing) {
+      records.push(record);
+    }
+
+
+    saveRecords(records);
+
+
+    document.getElementById("checkinStaffName").textContent =
+      staff.name;
+
+    document.getElementById("checkinStaffId").textContent =
+      staff.id;
+
+    document.getElementById("checkinTime").textContent =
+      time;
+
+
+    const lateWarning =
+      document.getElementById("checkinLateWarning");
+
+
+    if (late) {
+
+      lateWarning.style.display = "block";
+
+    } else {
+
+      lateWarning.style.display = "none";
+
+    }
+
+
+    document
+      .getElementById("qrCheckInResult")
+      .classList.add("show");
+
+
+    showMessage(
+      document.getElementById("inMessage"),
+      "✓ " + staff.name + " checked in successfully.",
+      "success"
+    );
+
+  }
+
+
+  /* =========================================================
+     MANUAL CHECK-OUT
+  ========================================================= */
+
+  function checkOut() {
+
+    const staffId =
+      document.getElementById("outId").value.trim();
+
+
+    if (!staffId) {
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "Please enter a Staff ID.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const staff = getStaff().find(
+      person =>
+        person.id.toLowerCase() === staffId.toLowerCase()
+    );
+
+
+    if (!staff) {
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "Staff member not found.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    checkOutByStaff(staff);
+
+  }
+
+
+  /* =========================================================
+     CHECK-OUT LOGIC
+  ========================================================= */
+
+  function checkOutByStaff(staff) {
+
+    const records = getRecords();
+
+    const now = new Date();
+
+    const date = formatDate(now);
+
+    const time = formatTime(now);
+
+
+    const record = records.find(
+      item =>
+        item.staffId === staff.id &&
+        item.date === date
+    );
+
+
+    if (!record || !record.checkIn) {
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "❌ " + staff.name +
+        " has not checked in today.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (record.checkOut) {
+
+      showMessage(
+        document.getElementById("outMessage"),
+        "⚠️ " + staff.name +
+        " has already checked out today.",
+        "warning"
+      );
+
+      return;
+
+    }
+
+
+    record.checkOut = time;
+
+
+    saveRecords(records);
+
+
+    document.getElementById("checkoutStaffName").textContent =
+      staff.name;
+
+    document.getElementById("checkoutStaffId").textContent =
+      staff.id;
+
+    document.getElementById("checkoutTime").textContent =
+      time;
+
+
+    document
+      .getElementById("qrCheckOutResult")
+      .classList.add("show");
+
+
+    showMessage(
+      document.getElementById("outMessage"),
+      "✓ " + staff.name + " checked out successfully.",
+      "success"
+    );
+
+  }
+
+
+  /* =========================================================
+     STAFF REGISTRATION
+  ========================================================= */
+
+  function registerStaff() {
+
+    const name =
+      document.getElementById("newStaffName").value.trim();
+
+    const id =
+      document.getElementById("newStaffId").value.trim();
+
+    const department =
+      document.getElementById("newStaffDept").value.trim();
+
+    const email =
+      document.getElementById("newStaffEmail").value.trim();
+
+    const checkInTime =
+      document.getElementById("newStaffCheckInTime").value;
+
+
+    if (!name || !id) {
+
+      showMessage(
+        document.getElementById("registerMessage"),
+        "Please enter the staff name and Staff ID.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const staff = getStaff();
+
+
+    const duplicate = staff.some(
+      person =>
+        person.id.toLowerCase() === id.toLowerCase()
+    );
+
+
+    if (duplicate) {
+
+      showMessage(
+        document.getElementById("registerMessage"),
+        "❌ This Staff ID already exists.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const newStaff = {
+
+      id: id,
+
+      name: name,
+
+      department: department,
+
+      email: email,
+
+      checkInTime:
+        checkInTime || WORK_START_TIME,
+
+      createdAt:
+        new Date().toISOString()
+
+    };
+
+
+    staff.push(newStaff);
+
+    saveStaff(staff);
+
+
+    document.getElementById("newStaffName").value = "";
+
+    document.getElementById("newStaffId").value = "";
+
+    document.getElementById("newStaffDept").value = "";
+
+    document.getElementById("newStaffEmail").value = "";
+
+    document.getElementById("newStaffCheckInTime").value =
+      WORK_START_TIME;
+
+
+    updateStaffDropdown();
+
+    displayStaffList();
+
+    updateAdminStats();
+
+
+    showMessage(
+      document.getElementById("registerMessage"),
+      "✓ Staff member registered successfully.",
+      "success"
+    );
+
+  }
+
+
+  /* =========================================================
+     STAFF DROPDOWN
+  ========================================================= */
+
+  function updateStaffDropdown() {
+
+    const staff = getStaff();
+
+
+    const nameSelect =
+      document.getElementById("name");
+
+
+    const qrSelect =
+      document.getElementById("qrStaffSelect");
+
+
+    if (nameSelect) {
+
+      nameSelect.innerHTML =
+        '<option value="">Select Staff Member</option>';
+
+
+      staff.forEach(person => {
+
+        const option =
+          document.createElement("option");
+
+        option.value = person.id;
+
+        option.textContent =
+          person.name + " (" + person.id + ")";
+
+        nameSelect.appendChild(option);
+
+      });
+
+    }
+
+
+    if (qrSelect) {
+
+      qrSelect.innerHTML =
+        '<option value="">Select Staff Member</option>';
+
+
+      staff.forEach(person => {
+
+        const option =
+          document.createElement("option");
+
+        option.value = person.id;
+
+        option.textContent =
+          person.name + " (" + person.id + ")";
+
+        qrSelect.appendChild(option);
+
+      });
+
+    }
+
+  }
+
+
+  /* =========================================================
+     FILL STAFF ID
+  ========================================================= */
+
+  function fillStaffId() {
+
+    const selectedId =
+      document.getElementById("name").value;
+
+
+    document.getElementById("staffId").value =
+      selectedId;
+
+  }
+
+
+  /* =========================================================
+     DISPLAY STAFF LIST
+  ========================================================= */
+
+  function displayStaffList() {
+
+    const container =
+      document.getElementById("staffList");
+
+
+    const staff = getStaff();
+
+
+    if (staff.length === 0) {
+
+      container.innerHTML =
+        '<div class="no-record">No staff registered yet.</div>';
+
+      return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    staff.forEach(person => {
+
+      const div =
+        document.createElement("div");
+
+      div.className = "staff-card";
+
+
+      div.innerHTML = `
+        <strong>${escapeHTML(person.name)}</strong>
+        <br>
+        Staff ID: ${escapeHTML(person.id)}
+        <br>
+        Department: ${escapeHTML(person.department || "N/A")}
+        <br>
+        Email: ${escapeHTML(person.email || "N/A")}
+        <br>
+        Expected Check-In:
+        ${escapeHTML(person.checkInTime || WORK_START_TIME)}
+      `;
+
+
+      container.appendChild(div);
+
+    });
+
+  }
+
+
+  /* =========================================================
+     ADMIN LOGIN
+  ========================================================= */
+
+  function loginAdmin() {
+
+    const password =
+      document.getElementById("adminPass").value;
+
+
+    const savedPassword =
+      localStorage.getItem(PASSWORD_KEY)
+      || DEFAULT_ADMIN_PASSWORD;
+
+
+    if (password === savedPassword) {
+
+      adminLoggedIn = true;
+
+
+      document.getElementById("adminLoginArea")
+        .classList.add("hidden");
+
+
+      document.getElementById("adminPanel")
+        .classList.remove("hidden");
+
+
+      document.getElementById("adminPass").value = "";
+
+
+      refreshAdminPanel();
+
+    } else {
+
+      showMessage(
+        document.getElementById("adminMessage"),
+        "❌ Incorrect admin password.",
+        "error"
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     ADMIN LOGOUT
+  ========================================================= */
+
+  function logoutAdmin() {
+
+    adminLoggedIn = false;
+
+
+    document.getElementById("adminLoginArea")
+      .classList.remove("hidden");
+
+
+    document.getElementById("adminPanel")
+      .classList.add("hidden");
+
+
+    showMessage(
+      document.getElementById("adminMessage"),
+      "You have been logged out.",
+      "success"
+    );
+
+  }
+
+
+  /* =========================================================
+     OPEN RESET PASSWORD
+  ========================================================= */
+
+  function openResetModal() {
+
+    document.getElementById("resetPasswordModal")
+      .classList.add("show");
+
+
+    document.getElementById("recoveryCode").value = "";
+
+    document.getElementById("newAdminPassword").value = "";
+
+    document.getElementById("confirmAdminPassword").value = "";
+
+    document.getElementById("resetMessage").style.display = "none";
+
+  }
+
+
+  /* =========================================================
+     RESET ADMIN PASSWORD
+  ========================================================= */
+
+  function resetAdminPassword() {
+
+    const recoveryCode =
+      document.getElementById("recoveryCode").value.trim();
+
+    const newPassword =
+      document.getElementById("newAdminPassword").value;
+
+    const confirmPassword =
+      document.getElementById("confirmAdminPassword").value;
+
+
+    if (!recoveryCode ||
+        !newPassword ||
+        !confirmPassword) {
+
+      showMessage(
+        document.getElementById("resetMessage"),
+        "Please complete all fields.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (recoveryCode !== RECOVERY_CODE) {
+
+      showMessage(
+        document.getElementById("resetMessage"),
+        "❌ Incorrect recovery code.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (newPassword.length < 6) {
+
+      showMessage(
+        document.getElementById("resetMessage"),
+        "Password must contain at least 6 characters.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (newPassword !== confirmPassword) {
+
+      showMessage(
+        document.getElementById("resetMessage"),
+        "❌ Passwords do not match.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    localStorage.setItem(
+      PASSWORD_KEY,
+      newPassword
+    );
+
+
+    showMessage(
+      document.getElementById("resetMessage"),
+      "✓ Password reset successfully. You can now log in with your new password.",
+      "success"
+    );
+
+
+    setTimeout(() => {
+
+      closeModal("resetPasswordModal");
+
+    }, 1800);
+
+  }
+
+
+  /* =========================================================
+     REFRESH ADMIN PANEL
+  ========================================================= */
+
+  function refreshAdminPanel() {
+
+    updateStaffDropdown();
+
+    displayStaffManagement();
+
+    updateAdminStats();
+
+  }
+
+
+  /* =========================================================
+     STAFF MANAGEMENT
+  ========================================================= */
+
+  function displayStaffManagement() {
+
+    const container =
+      document.getElementById("staffManagementList");
+
+
+    const staff = getStaff();
+
+
+    if (staff.length === 0) {
+
+      container.innerHTML =
+        '<div class="no-record">No staff registered.</div>';
+
+      return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    staff.forEach(person => {
+
+      const div =
+        document.createElement("div");
+
+      div.className = "staff-card";
+
+
+      div.innerHTML = `
+        <strong>${escapeHTML(person.name)}</strong>
+        <br>
+        ID: ${escapeHTML(person.id)}
+        <br>
+        Department: ${escapeHTML(person.department || "N/A")}
+        <br>
+        <button
+          class="danger smallButton"
+          onclick="askDeleteStaff('${encodeURIComponent(person.id)}')"
+        >
+          Delete Staff
+        </button>
+      `;
+
+
+      container.appendChild(div);
+
+    });
+
+  }
+
+
+  /* =========================================================
+     ASK DELETE STAFF
+  ========================================================= */
+
+  function askDeleteStaff(encodedId) {
+
+    deleteStaffId =
+      decodeURIComponent(encodedId);
+
+
+    const staff =
+      getStaff().find(
+        person => person.id === deleteStaffId
+      );
+
+
+    if (!staff) {
+      return;
+    }
+
+
+    document.getElementById("deleteMessage").textContent =
+      "Are you sure you want to delete " +
+      staff.name +
+      " (" +
+      staff.id +
+      ")?";
+
+
+    document.getElementById("deleteModal")
+      .classList.add("show");
+
+  }
+
+
+  /* =========================================================
+     CONFIRM DELETE
+  ========================================================= */
+
+  function confirmDelete() {
+
+    if (!deleteStaffId) {
+      return;
+    }
+
+
+    let staff = getStaff();
+
+
+    staff = staff.filter(
+      person => person.id !== deleteStaffId
+    );
+
+
+    saveStaff(staff);
+
+
+    updateStaffDropdown();
+
+    displayStaffList();
+
+    displayStaffManagement();
+
+    updateAdminStats();
+
+
+    closeModal("deleteModal");
+
+
+    deleteStaffId = null;
+
+  }
+
+
+  /* =========================================================
+     GENERATE STAFF QR
+  ========================================================= */
+
+  function generateStaffQR() {
+
+    const staffId =
+      document.getElementById("qrStaffSelect").value;
+
+
+    if (!staffId) {
+
+      alert("Please select a staff member.");
+
+      return;
+
+    }
+
+
+    const staff =
+      getStaff().find(
+        person => person.id === staffId
+      );
+
+
+    if (!staff) {
+
+      alert("Staff member not found.");
+
+      return;
+
+    }
+
+
+    const qrData =
+      "STAFF_ATTENDANCE|" + staff.id;
+
+
+    const container =
+      document.getElementById("qrCodeContainer");
+
+
+    container.innerHTML = "";
+
+
+    const wrapper =
+      document.createElement("div");
+
+    wrapper.className =
+      "qr-code-display";
+
+
+    const title =
+      document.createElement("h3");
+
+    title.textContent =
+      staff.name;
+
+
+    const info =
+      document.createElement("p");
+
+    info.textContent =
+      "Staff ID: " + staff.id;
+
+
+    const canvas =
+      document.createElement("canvas");
+
+    canvas.width = 300;
+
+    canvas.height = 300;
+
+
+    wrapper.appendChild(title);
+
+    wrapper.appendChild(info);
+
+    wrapper.appendChild(canvas);
+
+
+    const downloadButton =
+      document.createElement("button");
+
+    downloadButton.className =
+      "secondary smallButton";
+
+    downloadButton.textContent =
+      "📥 Download QR Code";
+
+
+    downloadButton.onclick = function () {
+
+      downloadCanvas(
+        canvas,
+        "QR-" + staff.id + ".png"
+      );
+
+    };
+
+
+    wrapper.appendChild(downloadButton);
+
+
+    container.appendChild(wrapper);
+
+
+    QRCode.toCanvas(
+      canvas,
+      qrData,
+      {
+        width: 280,
+        margin: 2
+      },
+      function(error) {
+
+        if (error) {
+
+          console.error(error);
+
+          container.innerHTML =
+            '<div class="message error" style="display:block;">Unable to generate QR code.</div>';
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     DOWNLOAD ALL QR CODES
+  ========================================================= */
+
+  async function downloadAllQRCodes() {
+
+    const staff = getStaff();
+
+
+    if (staff.length === 0) {
+
+      alert("No staff members registered.");
+
+      return;
+
+    }
+
+
+    for (const person of staff) {
+
+      const canvas =
+        document.createElement("canvas");
+
+
+      try {
+
+        await new Promise((resolve, reject) => {
+
+          QRCode.toCanvas(
+            canvas,
+            "STAFF_ATTENDANCE|" + person.id,
+            {
+              width: 500,
+              margin: 2
+            },
+            error => {
+
+              if (error) {
+                reject(error);
+              } else {
+                resolve();
+              }
+
+            }
+          );
+
+        });
+
+
+        downloadCanvas(
+          canvas,
+          "QR-" + person.id + ".png"
+        );
+
+
+        await delay(500);
+
+      } catch (error) {
+
+        console.error(
+          "Could not generate QR:",
+          person.id,
+          error
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /* =========================================================
+     DAILY REPORT
+  ========================================================= */
+
+  function showReport() {
+
+    const today =
+      formatDate(new Date());
+
+
+    const staff = getStaff();
+
+    const records = getRecords();
+
+
+    const todayRecords =
+      records.filter(
+        record => record.date === today
+      );
+
+
+    const present =
+      todayRecords.length;
+
+
+    const late =
+      todayRecords.filter(
+        record => record.late
+      ).length;
+
+
+    const checkedOut =
+      todayRecords.filter(
+        record => record.checkOut
+      ).length;
+
+
+    const absent =
+      Math.max(
+        staff.length - present,
+        0
+      );
+
+
+    document.getElementById("statPresent").textContent =
+      present;
+
+
+    document.getElementById("statLate").textContent =
+      late;
+
+
+    document.getElementById("statAbsent").textContent =
+      absent;
+
+
+    document.getElementById("statCheckedOut").textContent =
+      checkedOut;
+
+
+    const container =
+      document.getElementById("report-content");
+
+
+    if (staff.length === 0) {
+
+      container.innerHTML =
+        '<div class="no-record">No staff members registered.</div>';
+
+      return;
+
+    }
+
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Staff</th>
+            <th>ID</th>
+            <th>Department</th>
+            <th>Check-In</th>
+            <th>Status</th>
+            <th>Check-Out</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+
+    staff.forEach(person => {
+
+      const record =
+        todayRecords.find(
+          item => item.staffId === person.id
+        );
+
+
+      let status;
+
+      if (!record) {
+
+        status =
+          '<span class="badge absent">ABSENT</span>';
+
+      } else if (record.late) {
+
+        status =
+          '<span class="badge late">LATE</span>';
+
+      } else {
+
+        status =
+          '<span class="badge present">PRESENT</span>';
+
+      }
+
+
+      html += `
+        <tr>
+          <td>${escapeHTML(person.name)}</td>
+          <td>${escapeHTML(person.id)}</td>
+          <td>${escapeHTML(person.department || "-")}</td>
+          <td>${record ? escapeHTML(record.checkIn) : "-"}</td>
+          <td>${status}</td>
+          <td>${record && record.checkOut
+            ? escapeHTML(record.checkOut)
+            : "Not yet"}</td>
+        </tr>
+      `;
+
+    });
+
+
+    html += `
+        </tbody>
+      </table>
+    `;
+
+
+    container.innerHTML = html;
+
+  }
+
+
+  /* =========================================================
+     HISTORY
+  ========================================================= */
+
+  function filterHistory() {
+
+    const from =
+      document.getElementById("historyFrom").value;
+
+    const to =
+      document.getElementById("historyTo").value;
+
+
+    if (!from || !to) {
+
+      alert("Please select both dates.");
+
+      return;
+
+    }
+
+
+    if (from > to) {
+
+      alert("From Date cannot be after To Date.");
+
+      return;
+
+    }
+
+
+    const records = getRecords();
+
+
+    const filtered =
+      records.filter(record =>
+
+        record.date >= from &&
+        record.date <= to
+
+      );
+
+
+    const container =
+      document.getElementById("history-content");
+
+
+    if (filtered.length === 0) {
+
+      container.innerHTML =
+        '<div class="no-record">No attendance records found for this period.</div>';
+
+      return;
+
+    }
+
+
+    filtered.sort(
+      (a,b) =>
+        (b.date + b.checkIn)
+        .localeCompare(a.date + a.checkIn)
+    );
+
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Staff</th>
+            <th>ID</th>
+            <th>Department</th>
+            <th>Check-In</th>
+            <th>Check-Out</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+
+    filtered.forEach(record => {
+
+      let status =
+        record.late
+        ? '<span class="badge late">LATE</span>'
+        : '<span class="badge present">PRESENT</span>';
+
+
+      html += `
+        <tr>
+          <td>${escapeHTML(record.date)}</td>
+          <td>${escapeHTML(record.staffName)}</td>
+          <td>${escapeHTML(record.staffId)}</td>
+          <td>${escapeHTML(record.department || "-")}</td>
+          <td>${escapeHTML(record.checkIn || "-")}</td>
+          <td>${escapeHTML(record.checkOut || "-")}</td>
+          <td>${status}</td>
+        </tr>
+      `;
+
+    });
+
+
+    html += `
+        </tbody>
+      </table>
+    `;
+
+
+    container.innerHTML = html;
+
+  }
+
+
+  /* =========================================================
+     CSV EXPORT
+  ========================================================= */
+
+  function exportToCSV() {
+
+    const records = getRecords();
+
+
+    if (records.length === 0) {
+
+      alert("There are no attendance records to export.");
+
+      return;
+
+    }
+
+
+    const headers = [
+      "Date",
+      "Staff Name",
+      "Staff ID",
+      "Department",
+      "Check-In",
+      "Check-Out",
+      "Late"
+    ];
+
+
+    const rows =
+      records.map(record => [
+
+        record.date,
+
+        record.staffName,
+
+        record.staffId,
+
+        record.department || "",
+
+        record.checkIn || "",
+
+        record.checkOut || "",
+
+        record.late ? "YES" : "NO"
+
+      ]);
+
+
+    const csv = [
+
+      headers,
+
+      ...rows
+
+    ]
+
+    .map(row =>
+      row.map(csvEscape).join(",")
+    )
+
+    .join("\n");
+
+
+    downloadText(
+      csv,
+      "attendance-records.csv",
+      "text/csv"
+    );
+
+  }
+
+
+  /* =========================================================
+     ADMIN STATISTICS
+  ========================================================= */
+
+  function updateAdminStats() {
+
+    const staff = getStaff();
+
+    const records = getRecords();
+
+
+    const today =
+      formatDate(new Date());
+
+
+    const todayRecords =
+      records.filter(
+        record => record.date === today
+      );
+
+
+    const stats =
+      document.getElementById("systemStats");
+
+
+    if (!stats) {
+      return;
+    }
+
+
+    stats.innerHTML = `
+      <div class="stats">
+
+        <div class="stat">
+          <div class="stat-label">Registered Staff</div>
+          <div class="stat-value">${staff.length}</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">All Records</div>
+          <div class="stat-value">${records.length}</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Today's Records</div>
+          <div class="stat-value">${todayRecords.length}</div>
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  /* =========================================================
+     CLEAR ATTENDANCE
+  ========================================================= */
+
+  function clearAllRecords() {
+
+    if (!adminLoggedIn) {
+
+      alert("Please log in as admin first.");
+
+      return;
+
+    }
+
+
+    const answer =
+      confirm(
+        "WARNING!\n\nThis will permanently delete all attendance records from this browser.\n\nContinue?"
+      );
+
+
+    if (!answer) {
+      return;
+    }
+
+
+    localStorage.setItem(
+      RECORDS_KEY,
+      JSON.stringify([])
+    );
+
+
+    updateAdminStats();
+
+    showReport();
+
+
+    alert("All attendance records have been cleared.");
+
+  }
+
+
+  /* =========================================================
+     RESET STAFF DATABASE
+  ========================================================= */
+
+  function resetStaffDatabase() {
+
+    if (!adminLoggedIn) {
+
+      alert("Please log in as admin first.");
+
+      return;
+
+    }
+
+
+    const answer =
+      confirm(
+        "WARNING!\n\nThis will delete ALL registered staff and ALL attendance records.\n\nThis cannot be undone.\n\nContinue?"
+      );
+
+
+    if (!answer) {
+      return;
+    }
+
+
+    localStorage.setItem(
+      STAFF_KEY,
+      JSON.stringify([])
+    );
+
+
+    localStorage.setItem(
+      RECORDS_KEY,
+      JSON.stringify([])
+    );
+
+
+    updateStaffDropdown();
+
+    displayStaffList();
+
+    displayStaffManagement();
+
+    updateAdminStats();
+
+    showReport();
+
+
+    alert("Staff database has been reset.");
+
+  }
+
+
+  /* =========================================================
+     DOWNLOAD FULL BACKUP
+  ========================================================= */
+
+  function downloadFullBackup() {
+
+    if (!adminLoggedIn) {
+
+      alert("Please log in as admin first.");
+
+      return;
+
+    }
+
+
+    const backup = {
+
+      exportedAt:
+        new Date().toISOString(),
+
+      staff:
+        getStaff(),
+
+      attendance:
+        getRecords()
+
+    };
+
+
+    downloadText(
+
+      JSON.stringify(
+        backup,
+        null,
+        2
+      ),
+
+      "attendance-backup.json",
+
+      "application/json"
+
+    );
+
+  }
+
+
+  /* =========================================================
+     DEFAULT DATES
+  ========================================================= */
+
+  function setDefaultDates() {
+
+    const today =
+      formatDate(new Date());
+
+
+    const from =
+      document.getElementById("historyFrom");
+
+    const to =
+      document.getElementById("historyTo");
+
+
+    if (from) {
+      from.value = today;
+    }
+
+
+    if (to) {
+      to.value = today;
+    }
+
+  }
+
+
+  /* =========================================================
+     TIME HELPERS
+  ========================================================= */
+
+  function formatDate(date) {
+
+    const year =
+      date.getFullYear();
+
+
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
+
+
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, "0");
+
+
+    return `${year}-${month}-${day}`;
+
+  }
+
+
+  function formatTime(date) {
+
+    return date.toLocaleTimeString(
+      [],
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     LATE CHECK
+  ========================================================= */
+
+  function isLate(actualTime, expectedTime) {
+
+    const actual =
+      timeToMinutes(actualTime);
+
+    const expected =
+      timeToMinutes(expectedTime);
+
+
+    return (
+      actual >
+      expected + LATE_THRESHOLD_MINUTES
+    );
+
+  }
+
+
+  function timeToMinutes(time) {
+
+    const parts =
+      time.split(":");
+
+
+    const hours =
+      parseInt(parts[0], 10);
+
+
+    const minutes =
+      parseInt(parts[1], 10);
+
+
+    return (
+      hours * 60 +
+      minutes
+    );
+
+  }
+
+
+  /* =========================================================
+     ID GENERATOR
+  ========================================================= */
+
+  function generateId() {
+
+    return (
+      Date.now().toString(36) +
+      Math.random()
+        .toString(36)
+        .substring(2, 8)
+    );
+
+  }
+
+
+  /* =========================================================
+     MESSAGE
+  ========================================================= */
+
+  function showMessage(element, text, type) {
+
+    if (!element) {
+      return;
+    }
+
+
+    element.textContent = text;
+
+    element.className = "message";
+
+
+    if (type === "error") {
+
+      element.classList.add("error");
+
+    }
+
+    if (type === "warning") {
+
+      element.classList.add("warning");
+
+    }
+
+
+    element.style.display = "block";
+
+
+    clearTimeout(
+      element._messageTimer
+    );
+
+
+    element._messageTimer =
+      setTimeout(() => {
+
+        element.style.display = "none";
+
+      }, 5000);
+
+  }
+
+
+  /* =========================================================
+     MODAL
+  ========================================================= */
+
+  function closeModal(id) {
+
+    const modal =
+      document.getElementById(id);
+
+
+    if (modal) {
+
+      modal.classList.remove("show");
+
+    }
+
+  }
+
+
+  /* =========================================================
+     DOWNLOAD CANVAS
+  ========================================================= */
+
+  function downloadCanvas(canvas, filename) {
+
+    const link =
+      document.createElement("a");
+
+
+    link.download = filename;
+
+    link.href =
+      canvas.toDataURL("image/png");
+
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+  }
+
+
+  /* =========================================================
+     DOWNLOAD TEXT
+  ========================================================= */
+
+  function downloadText(
+    content,
+    filename,
+    mimeType
+  ) {
+
+    const blob =
+      new Blob(
+        [content],
+        {
+          type: mimeType
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(blob);
+
+
+    const link =
+      document.createElement("a");
+
+
+    link.href = url;
+
+    link.download = filename;
+
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+
+    URL.revokeObjectURL(url);
+
+  }
+
+
+  /* =========================================================
+     CSV ESCAPE
+  ========================================================= */
+
+  function csvEscape(value) {
+
+    const stringValue =
+      String(value ?? "");
+
+
+    if (
+      stringValue.includes(",") ||
+      stringValue.includes('"') ||
+      stringValue.includes("\n")
+    ) {
+
+      return '"' +
+        stringValue.replace(
+          /"/g,
+          '""'
+        ) +
+        '"';
+
+    }
+
+
+    return stringValue;
+
+  }
+
+
+  /* =========================================================
+     HTML ESCAPE
+  ========================================================= */
+
+  function escapeHTML(value) {
+
+    return String(value ?? "")
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+
+  }
+
+
+  /* =========================================================
+     DELAY
+  ========================================================= */
+
+  function delay(ms) {
+
+    return new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          ms
+        )
+    );
+
+  }
+
+
+  /* =========================================================
+     CLOSE MODAL WHEN CLICKING OUTSIDE
+  ========================================================= */
+
+  window.addEventListener(
+    "click",
+    function(event) {
+
+      const deleteModal =
+        document.getElementById("deleteModal");
+
+      const resetModal =
+        document.getElementById("resetPasswordModal");
+
+
+      if (event.target === deleteModal) {
+
+        closeModal("deleteModal");
+
+      }
+
+
+      if (event.target === resetModal) {
+
+        closeModal("resetPasswordModal");
+
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
