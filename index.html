@@ -1534,3 +1534,28 @@
 </body>
 
 </html>
+<label>Admin Password</label>
+<input type="password" id="adminPass" placeholder="Enter admin password">
+
+<button class="adminButton" onclick="loginAdmin()">LOGIN</button>
+
+<button class="secondary smallButton" onclick="showResetPassword()">
+  🔑 Forgot / Reset Password
+</button>
+
+<div id="resetPasswordBox" class="hidden">
+  <h3>Reset Admin Password</h3>
+
+  <label>Reset Code</label>
+  <input type="password" id="resetCode" placeholder="Enter reset code">
+
+  <label>New Password</label>
+  <input type="password" id="newAdminPassword" placeholder="Enter new password">
+
+  <label>Confirm New Password</label>
+  <input type="password" id="confirmAdminPassword" placeholder="Confirm new password">
+
+  <button class="adminButton" onclick="resetAdminPassword()">
+    RESET PASSWORD
+  </button>
+</div>
