@@ -1559,3 +1559,27 @@
     RESET PASSWORD
   </button>
 </div>
+<div id="resetPasswordBox" style="display:none; margin-top:20px; padding:20px; background:#f5f5f5; border-radius:10px;">
+
+  <h3>🔑 Reset Admin Password</h3>
+
+  <label>Reset Code</label>
+  <input type="password" id="resetCode" placeholder="Enter reset code">
+
+  <label>New Password</label>
+  <input type="password" id="newAdminPassword" placeholder="Enter new password">
+
+  <label>Confirm New Password</label>
+  <input type="password" id="confirmAdminPassword" placeholder="Confirm new password">
+
+  <button type="button" onclick="resetAdminPassword()" class="adminButton">
+    🔄 RESET PASSWORD
+  </button>
+
+  <button type="button" onclick="hideResetPassword()" class="secondary">
+    CANCEL
+  </button>
+
+  <p id="resetMessage" style="margin-top:15px;font-weight:bold;"></p>
+
+</div>
