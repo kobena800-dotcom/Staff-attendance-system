@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const { initDb, db } = require('./db');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 
 // Load env vars
 const PORT = process.env.PORT || 4000;
@@ -15,6 +16,7 @@ const SECRET = process.env.SECRET || 'change_this_secret';
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || '*';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_JWT_EXP = process.env.ADMIN_JWT_EXP || '8h';
 
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
@@ -45,8 +47,12 @@ function verifyToken(token) {
   const [payloadB64, sig] = parts;
   const expected = signPayload(payloadB64);
   // timing-safe compare
-  const ok = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig));
-  if (!ok) return null;
+  try {
+    const ok = crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig));
+    if (!ok) return null;
+  } catch (e) {
+    return null;
+  }
   try {
     const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
     return payload;
@@ -55,15 +61,33 @@ function verifyToken(token) {
   }
 }
 
+// Middleware: verify admin JWT
+function verifyAdmin(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'missing admin token' });
+  const token = auth.slice(7);
+  try {
+    const decoded = jwt.verify(token, SECRET);
+    if (decoded && decoded.role === 'admin') {
+      req.admin = decoded;
+      return next();
+    }
+    return res.status(403).json({ error: 'invalid admin token' });
+  } catch (e) {
+    return res.status(401).json({ error: 'invalid admin token' });
+  }
+}
+
 // Device registration: create a device token
 app.post('/api/device/register', (req, res) => {
   const { name } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
   const token = uuidv4();
+  const id = uuidv4();
   const stmt = db.prepare('INSERT INTO devices (id, name, token, created_at) VALUES (?, ?, ?, ?)');
-  stmt.run(uuidv4(), name, token, Date.now());
+  stmt.run(id, name, token, Date.now());
   stmt.finalize();
-  res.json({ token, name });
+  res.json({ token, name, id });
 });
 
 // Generate a signed QR token for a staffId. Query param expirySeconds optional.
@@ -88,7 +112,7 @@ app.get('/api/qr/:staffId', async (req, res) => {
   }
 });
 
-// Simple admin create-first (only if no admin exists). Use ADMIN_PASSWORD env to create initial admin.
+// Admin setup: create initial admin (only if no admin exists). Use ADMIN_PASSWORD env to create initial admin.
 app.post('/api/admin/setup', (req, res) => {
   const { password } = req.body;
   if (!password || password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'invalid admin setup password' });
@@ -100,6 +124,19 @@ app.post('/api/admin/setup', (req, res) => {
     const passHash = crypto.createHash('sha256').update(password).digest('hex');
     db.run('INSERT INTO admins (id, password_hash, created_at) VALUES (?, ?, ?)', [id, passHash, Date.now()]);
     res.json({ ok: true });
+  });
+});
+
+// Admin login: returns JWT
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  if (!password) return res.status(400).json({ error: 'password required' });
+  const passHash = crypto.createHash('sha256').update(password).digest('hex');
+  db.get('SELECT id FROM admins WHERE password_hash = ? LIMIT 1', [passHash], (err, row) => {
+    if (err) return res.status(500).json({ error: 'db error' });
+    if (!row) return res.status(401).json({ error: 'invalid credentials' });
+    const token = jwt.sign({ role: 'admin', id: row.id }, SECRET, { expiresIn: ADMIN_JWT_EXP });
+    res.json({ token });
   });
 });
 
@@ -185,8 +222,8 @@ app.post('/api/checkout', (req, res) => {
   });
 });
 
-// Simple endpoint to list attendance (for admin) — WARNING: In production protect this with auth
-app.get('/api/attendance', (req, res) => {
+// Simple endpoint to list attendance (for admin) — protected by admin JWT
+app.get('/api/attendance', verifyAdmin, (req, res) => {
   db.all('SELECT * FROM attendance ORDER BY time DESC LIMIT 500', (err, rows) => {
     if (err) return res.status(500).json({ error: 'db error' });
     res.json(rows);
