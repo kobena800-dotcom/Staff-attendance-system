@@ -1,543 +1,1062 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Staff Attendance System</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Attendance System</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f2f5f9;
-}
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f2f5f9;
+      color: #333;
+    }
 
-header {
-  background: #123c69;
-  color: white;
-  text-align: center;
-  padding: 25px 10px;
-}
+    header {
+      background: linear-gradient(135deg, #123c69 0%, #0f2d52 100%);
+      color: white;
+      text-align: center;
+      padding: 25px 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
 
-.container {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 10px;
-}
+    header h1 {
+      margin: 0 0 5px;
+    }
 
-.card {
-  background: white;
-  padding: 20px;
-  margin-bottom: 20px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-}
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
 
-h2 {
-  color: #123c69;
-}
+    .nav-tabs button {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+      font-weight: bold;
+    }
 
-input {
-  width: 100%;
-  padding: 13px;
-  margin: 8px 0 15px;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 7px;
-  font-size: 16px;
-}
+    .nav-tabs button:hover {
+      background: rgba(255,255,255,0.4);
+    }
 
-button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 5px;
-  border: none;
-  border-radius: 7px;
-  background: #123c69;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-}
+    .nav-tabs button.active {
+      background: white;
+      color: #123c69;
+    }
 
-button:hover {
-  opacity: 0.9;
-}
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 10px;
+    }
 
-.checkout {
-  background: #b3261e;
-}
+    .card {
+      background: white;
+      padding: 25px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      display: none;
+    }
 
-.reportButton {
-  background: #176b2c;
-}
+    .card.active {
+      display: block;
+    }
 
-.message {
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 7px;
-  display: none;
-  background: #e6f4ea;
-  color: #176b2c;
-}
+    h2 {
+      color: #123c69;
+      margin-top: 0;
+      border-bottom: 3px solid #123c69;
+      padding-bottom: 10px;
+    }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-}
+    h3 {
+      color: #123c69;
+      margin-top: 15px;
+    }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: left;
-  font-size: 14px;
-}
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 12px;
+      color: #333;
+    }
 
-th {
-  background: #123c69;
-  color: white;
-}
+    input, select, textarea {
+      width: 100%;
+      padding: 13px;
+      margin: 8px 0 15px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      font-size: 16px;
+      font-family: inherit;
+    }
 
-.no-record {
-  text-align: center;
-  padding: 15px;
-  color: #777;
-}
+    input:focus, select:focus {
+      outline: none;
+      border-color: #123c69;
+      box-shadow: 0 0 5px rgba(18,60,105,0.3);
+    }
 
-@media(max-width:600px) {
-  th, td {
-    font-size: 11px;
-    padding: 7px;
-  }
-}
-</style>
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 7px;
+      background: #123c69;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background: #0f2d52;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .checkout {
+      background: #b3261e;
+    }
+
+    .checkout:hover {
+      background: #8b1d15;
+    }
+
+    .reportButton {
+      background: #176b2c;
+    }
+
+    .reportButton:hover {
+      background: #125922;
+    }
+
+    .adminButton {
+      background: #6a1b9a;
+    }
+
+    .adminButton:hover {
+      background: #511475;
+    }
+
+    .registerButton {
+      background: #0b6e4f;
+    }
+
+    .registerButton:hover {
+      background: #084d38;
+    }
+
+    .danger {
+      background: #b3261e;
+    }
+
+    .danger:hover {
+      background: #8b1d15;
+    }
+
+    .secondary {
+      background: #666;
+    }
+
+    .secondary:hover {
+      background: #555;
+    }
+
+    .smallButton {
+      width: auto;
+      padding: 8px 12px;
+      font-size: 13px;
+      margin: 2px;
+      display: inline-block;
+    }
+
+    .message {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 7px;
+      display: none;
+      background: #e6f4ea;
+      color: #176b2c;
+      border-left: 4px solid #176b2c;
+    }
+
+    .message.error {
+      background: #fdecea;
+      color: #b3261e;
+      border-left-color: #b3261e;
+    }
+
+    .message.warning {
+      background: #fff3cd;
+      color: #856404;
+      border-left-color: #856404;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      background: linear-gradient(135deg, #123c69 0%, #0f2d52 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 10px 0 5px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background: #123c69;
+      color: white;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+
+    tr:hover {
+      background: #f0f0f0;
+    }
+
+    .no-record {
+      text-align: center;
+      padding: 30px;
+      color: #999;
+      font-size: 16px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge.present {
+      background: #e6f4ea;
+      color: #176b2c;
+    }
+
+    .badge.absent {
+      background: #fdecea;
+      color: #b3261e;
+    }
+
+    .badge.late {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .badge.left-early {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #000;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .filter-section {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 7px;
+      margin-bottom: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .two-columns {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .nav-tabs {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .nav-tabs button {
+        width: 100%;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+
+      .smallButton {
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<header>
-  <h1>Staff Attendance System</h1>
-  <p>Staff Check-In, Check-Out & Daily Report</p>
-</header>
+  <header>
+    <h1>👥 Staff Attendance System</h1>
+    <p>Professional Attendance Tracking & Management</p>
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('checkin')">Check-In</button>
+      <button class="tab-btn" onclick="switchTab('checkout')">Check-Out</button>
+      <button class="tab-btn" onclick="switchTab('report')">Daily Report</button>
+      <button class="tab-btn" onclick="switchTab('history')">History</button>
+      <button class="tab-btn" onclick="switchTab('register')">Register Staff</button>
+      <button class="tab-btn" onclick="switchTab('admin')">Admin Panel</button>
+    </div>
+  </header>
 
-<div class="container">
+  <div class="container">
 
-<!-- CHECK IN -->
+    <!-- CHECK IN -->
+    <div id="checkin" class="card active">
+      <h2>✓ Staff Check-In</h2>
 
-<div class="card">
+      <label>Staff Name</label>
+      <select id="name">
+        <option value="">Select Staff Member</option>
+      </select>
 
-<h2>Staff Check-In</h2>
+      <label>Staff ID</label>
+      <input type="text" id="staffId" placeholder="Staff ID (auto-filled)" readonly>
 
-<label>Staff Name</label>
+      <button onclick="checkIn()">CHECK IN</button>
 
-<input
-  type="text"
-  id="name"
-  placeholder="Enter staff name"
->
+      <div id="inMessage" class="message"></div>
+    </div>
 
-<label>Staff ID</label>
+    <!-- CHECK OUT -->
+    <div id="checkout" class="card">
+      <h2>✗ Staff Check-Out</h2>
 
-<input
-  type="text"
-  id="staffId"
-  placeholder="Enter staff ID"
->
+      <label>Staff ID</label>
+      <input type="text" id="outId" placeholder="Enter staff ID">
 
-<button onclick="checkIn()">
-  CHECK IN
-</button>
+      <button class="checkout" onclick="checkOut()">CHECK OUT</button>
 
-<div id="inMessage" class="message"></div>
+      <div id="outMessage" class="message"></div>
+    </div>
 
-</div>
+    <!-- DAILY REPORT -->
+    <div id="report" class="card">
+      <h2>📊 Daily Staff Report</h2>
 
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Total Present</div>
+          <div class="stat-value" id="statPresent">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Late Arrivals</div>
+          <div class="stat-value" id="statLate">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Absent</div>
+          <div class="stat-value" id="statAbsent">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Checked Out</div>
+          <div class="stat-value" id="statCheckedOut">0</div>
+        </div>
+      </div>
 
-<!-- CHECK OUT -->
+      <button class="reportButton" onclick="showReport()">REFRESH REPORT</button>
+      <button class="secondary smallButton" onclick="exportToCSV()">📥 Export to CSV</button>
 
-<div class="card">
+      <div id="report-content">
+        <div class="no-record">Tap "REFRESH REPORT" to view today's attendance.</div>
+      </div>
+    </div>
 
-<h2>Staff Check-Out</h2>
+    <!-- ATTENDANCE HISTORY -->
+    <div id="history" class="card">
+      <h2>📅 Attendance History</h2>
 
-<label>Staff ID</label>
+      <div class="filter-section">
+        <div class="two-columns">
+          <div class="form-group">
+            <label>From Date</label>
+            <input type="date" id="historyFrom">
+          </div>
+          <div class="form-group">
+            <label>To Date</label>
+            <input type="date" id="historyTo">
+          </div>
+        </div>
+        <button onclick="filterHistory()">FILTER HISTORY</button>
+      </div>
 
-<input
-  type="text"
-  id="outId"
-  placeholder="Enter staff ID"
->
+      <div id="history-content">
+        <div class="no-record">Set date range and click "FILTER HISTORY" to view records.</div>
+      </div>
+    </div>
 
-<button
-  class="checkout"
-  onclick="checkOut()"
->
-  CHECK OUT
-</button>
+    <!-- STAFF REGISTRATION -->
+    <div id="register" class="card">
+      <h2>➕ Register New Staff</h2>
 
-<div id="outMessage" class="message"></div>
+      <label>Staff Name</label>
+      <input type="text" id="newStaffName" placeholder="Enter full name">
 
-</div>
+      <label>Staff ID</label>
+      <input type="text" id="newStaffId" placeholder="Enter unique staff ID">
 
+      <label>Department</label>
+      <input type="text" id="newStaffDept" placeholder="Enter department">
 
-<!-- REPORT -->
+      <label>Email</label>
+      <input type="email" id="newStaffEmail" placeholder="Enter email address">
 
-<div class="card">
+      <label>Expected Check-In Time</label>
+      <input type="time" id="newStaffCheckInTime" value="09:00">
 
-<h2>Daily Staff Report</h2>
+      <button class="registerButton" onclick="registerStaff()">REGISTER STAFF</button>
 
-<button
-  class="reportButton"
-  onclick="showReport()"
->
-  SHOW DAILY REPORT
-</button>
+      <div id="registerMessage" class="message"></div>
 
-<div id="report">
-  <div class="no-record">
-    Tap "SHOW DAILY REPORT" to view attendance.
+      <h3>Registered Staff</h3>
+      <div id="staffList"></div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="admin" class="card">
+      <h2>🔐 Admin Panel</h2>
+
+      <label>Admin Password</label>
+      <input type="password" id="adminPass" placeholder="Enter admin password">
+
+      <button class="adminButton" onclick="loginAdmin()">LOGIN</button>
+
+      <div id="adminMessage" class="message"></div>
+
+      <div id="adminPanel" class="hidden">
+        <h3>Admin Controls</h3>
+
+        <button class="danger smallButton" onclick="clearAllRecords()">Clear All Attendance Records</button>
+        <button class="secondary smallButton" onclick="resetStaffDatabase()">Reset Staff Database</button>
+        <button class="secondary smallButton" onclick="downloadFullBackup()">📥 Download Backup</button>
+
+        <h3>Staff Management</h3>
+        <div id="staffManagementList"></div>
+
+        <h3>System Statistics</h3>
+        <div id="systemStats"></div>
+      </div>
+    </div>
+
   </div>
-</div>
 
-</div>
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div id="deleteModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('deleteModal')">&times;</span>
+      <h2>Confirm Deletion</h2>
+      <p id="deleteMessage"></p>
+      <button class="danger" onclick="confirmDelete()">DELETE</button>
+      <button class="secondary" onclick="closeModal('deleteModal')">CANCEL</button>
+    </div>
+  </div>
 
-</div>
+  <script>
+    // ========================= CONSTANTS =========================
+    const ADMIN_PASSWORD = "admin123";
+    const WORK_START_TIME = "09:00";
+    const LATE_THRESHOLD_MINUTES = 15;
 
-
-<script>
-
-/* =========================
-   ATTENDANCE STORAGE
-========================= */
-
-function getRecords() {
-
-  let saved =
-    localStorage.getItem("staffAttendance");
-
-  if (saved === null) {
-    return [];
-  }
-
-  return JSON.parse(saved);
-}
-
-
-function saveRecords(records) {
-
-  localStorage.setItem(
-    "staffAttendance",
-    JSON.stringify(records)
-  );
-
-}
-
-
-/* =========================
-   DATE & TIME
-========================= */
-
-function getDate() {
-
-  let now = new Date();
-
-  return now.toLocaleDateString();
-
-}
-
-
-function getTime() {
-
-  let now = new Date();
-
-  return now.toLocaleTimeString();
-
-}
-
-
-/* =========================
-   CHECK IN
-========================= */
-
-function checkIn() {
-
-  let name =
-    document.getElementById("name").value.trim();
-
-  let staffId =
-    document.getElementById("staffId").value.trim();
-
-  let message =
-    document.getElementById("inMessage");
-
-
-  if (name === "" || staffId === "") {
-
-    alert("Please enter Staff Name and Staff ID.");
-
-    return;
-
-  }
-
-
-  let records = getRecords();
-
-  let today = getDate();
-
-
-  /* Check for existing check-in */
-
-  let existing =
-    records.find(function(record) {
-
-      return (
-        record.staffId === staffId &&
-        record.date === today
-      );
-
+    // ========================= INITIALIZATION =========================
+    document.addEventListener('DOMContentLoaded', function() {
+      setDefaultDates();
+      updateStaffDropdown();
+      displayStaffList();
+      updateAdminStats();
     });
 
-
-  if (existing) {
-
-    alert(
-      "This staff member has already checked in today."
-    );
-
-    return;
-
-  }
-
-
-  /* Create new attendance record */
-
-  let newRecord = {
-
-    name: name,
-
-    staffId: staffId,
-
-    date: today,
-
-    checkIn: getTime(),
-
-    checkOut: "",
-
-    status: "Present"
-
-  };
-
-
-  records.push(newRecord);
-
-  saveRecords(records);
-
-
-  message.style.display = "block";
-
-  message.innerHTML =
-    "✓ " + name +
-    " successfully checked in at " +
-    newRecord.checkIn;
-
-
-  /* Clear form */
-
-  document.getElementById("name").value = "";
-
-  document.getElementById("staffId").value = "";
-
-
-  /* Automatically show report */
-
-  showReport();
-
-}
-
-
-/* =========================
-   CHECK OUT
-========================= */
-
-function checkOut() {
-
-  let staffId =
-    document.getElementById("outId").value.trim();
-
-  let message =
-    document.getElementById("outMessage");
-
-
-  if (staffId === "") {
-
-    alert("Please enter Staff ID.");
-
-    return;
-
-  }
-
-
-  let records = getRecords();
-
-  let today = getDate();
-
-
-  /* Find staff record */
-
-  let record =
-    records.find(function(item) {
-
-      return (
-        item.staffId === staffId &&
-        item.date === today
-      );
-
-    });
-
-
-  if (!record) {
-
-    alert(
-      "No check-in record found for this Staff ID today."
-    );
-
-    return;
-
-  }
-
-
-  if (record.checkOut !== "") {
-
-    alert(
-      "This staff member has already checked out today."
-    );
-
-    return;
-
-  }
-
-
-  record.checkOut = getTime();
-
-  saveRecords(records);
-
-
-  message.style.display = "block";
-
-  message.innerHTML =
-    "✓ Staff " +
-    staffId +
-    " successfully checked out at " +
-    record.checkOut;
-
-
-  document.getElementById("outId").value = "";
-
-
-  /* Automatically show report */
-
-  showReport();
-
-}
-
-
-/* =========================
-   DAILY REPORT
-========================= */
-
-function showReport() {
-
-  let report =
-    document.getElementById("report");
-
-  let records = getRecords();
-
-  let today = getDate();
-
-
-  let todayRecords =
-    records.filter(function(record) {
-
-      return record.date === today;
-
-    });
-
-
-  if (todayRecords.length === 0) {
-
-    report.innerHTML =
-
-      '<div class="no-record">' +
-      'No attendance records for today.' +
-      '</div>';
-
-    return;
-
-  }
-
-
-  let html =
-
-    "<table>" +
-
-    "<tr>" +
-
-    "<th>Staff Name</th>" +
-    "<th>Staff ID</th>" +
-    "<th>Date</th>" +
-    "<th>Arrival</th>" +
-    "<th>Closing</th>" +
-    "<th>Status</th>" +
-
-    "</tr>";
-
-
-  todayRecords.forEach(function(record) {
-
-    html +=
-
-      "<tr>" +
-
-      "<td>" +
-      record.name +
-      "</td>" +
-
-      "<td>" +
-      record.staffId +
-      "</td>" +
-
-      "<td>" +
-      record.date +
-      "</td>" +
-
-      "<td>" +
-      record.checkIn +
-      "</td>" +
-
-      "<td>" +
-      (
-        record.checkOut === ""
-        ? "Not checked out"
-        : record.checkOut
-      ) +
-      "</td>" +
-
-      "<td>" +
-      record.status +
-      "</td>" +
-
-      "</tr>";
-
-  });
-
-
-  html += "</table>";
-
-
-  report.innerHTML = html;
-
-}
-
-</script>
+    // ========================= TAB NAVIGATION =========================
+    function switchTab(tabName) {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => card.classList.remove('active'));
+
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+
+      if (tabName === 'report') {
+        showReport();
+      }
+    }
+
+    // ========================= STORAGE MANAGEMENT =========================
+    function getRecords() {
+      let saved = localStorage.getItem("staffAttendance");
+      return saved === null ? [] : JSON.parse(saved);
+    }
+
+    function saveRecords(records) {
+      localStorage.setItem("staffAttendance", JSON.stringify(records));
+    }
+
+    function getStaffList() {
+      let saved = localStorage.getItem("staffDatabase");
+      return saved === null ? [] : JSON.parse(saved);
+    }
+
+    function saveStaffList(staff) {
+      localStorage.setItem("staffDatabase", JSON.stringify(staff));
+    }
+
+    // ========================= DATE & TIME =========================
+    function getDate() {
+      return new Date().toLocaleDateString('en-CA');
+    }
+
+    function getTime() {
+      return new Date().toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+
+    function getTimeOnly() {
+      const now = new Date();
+      return now.getHours().toString().padStart(2, '0') + ':' + 
+             now.getMinutes().toString().padStart(2, '0');
+    }
+
+    function setDefaultDates() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('historyFrom').value = today;
+      document.getElementById('historyTo').value = today;
+    }
+
+    // ========================= STAFF REGISTRATION =========================
+    function registerStaff() {
+      const name = document.getElementById('newStaffName').value.trim();
+      const id = document.getElementById('newStaffId').value.trim();
+      const dept = document.getElementById('newStaffDept').value.trim();
+      const email = document.getElementById('newStaffEmail').value.trim();
+      const checkInTime = document.getElementById('newStaffCheckInTime').value;
+      const message = document.getElementById('registerMessage');
+
+      if (!name || !id) {
+        showMessage(message, 'Name and ID are required', 'error');
+        return;
+      }
+
+      let staff = getStaffList();
+
+      if (staff.find(s => s.id === id)) {
+        showMessage(message, 'Staff ID already exists', 'error');
+        return;
+      }
+
+      const newStaff = {
+        id: id,
+        name: name,
+        department: dept,
+        email: email,
+        checkInTime: checkInTime,
+        registeredDate: getDate(),
+        active: true
+      };
+
+      staff.push(newStaff);
+      saveStaffList(staff);
+
+      showMessage(message, `✓ ${name} registered successfully!`, 'success');
+
+      document.getElementById('newStaffName').value = '';
+      document.getElementById('newStaffId').value = '';
+      document.getElementById('newStaffDept').value = '';
+      document.getElementById('newStaffEmail').value = '';
+      document.getElementById('newStaffCheckInTime').value = '09:00';
+
+      updateStaffDropdown();
+      displayStaffList();
+    }
+
+    function updateStaffDropdown() {
+      const staff = getStaffList();
+      const dropdown = document.getElementById('name');
+
+      dropdown.innerHTML = '<option value="">Select Staff Member</option>';
+
+      staff.forEach(s => {
+        if (s.active) {
+          const option = document.createElement('option');
+          option.value = s.name;
+          option.dataset.id = s.id;
+          option.dataset.checkInTime = s.checkInTime;
+          option.textContent = s.name + ' (' + s.id + ')';
+          dropdown.appendChild(option);
+        }
+      });
+
+      dropdown.addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        document.getElementById('staffId').value = selected.dataset.id || '';
+      });
+    }
+
+    function displayStaffList() {
+      const staff = getStaffList();
+      const listDiv = document.getElementById('staffList');
+
+      if (staff.length === 0) {
+        listDiv.innerHTML = '<div class="no-record">No staff registered yet.</div>';
+        return;
+      }
+
+      let html = '<table><tr><th>Name</th><th>ID</th><th>Department</th><th>Check-In Time</th><th>Status</th></tr>';
+
+      staff.forEach(s => {
+        html += `<tr>
+          <td>${s.name}</td>
+          <td>${s.id}</td>
+          <td>${s.department || '-'}</td>
+          <td>${s.checkInTime}</td>
+          <td><span class="badge ${s.active ? 'present' : 'absent'}">${s.active ? 'Active' : 'Inactive'}</span></td>
+        </tr>`;
+      });
+
+      html += '</table>';
+      listDiv.innerHTML = html;
+    }
+
+    // ========================= CHECK IN =========================
+    function checkIn() {
+      const name = document.getElementById('name').value.trim();
+      const staffId = document.getElementById('staffId').value.trim();
+      const message = document.getElementById('inMessage');
+
+      if (!name || !staffId) {
+        showMessage(message, 'Please select a staff member', 'error');
+        return;
+      }
+
+      let records = getRecords();
+      let today = getDate();
+
+      let existing = records.find(r => r.staffId === staffId && r.date === today);
+
+      if (existing) {
+        showMessage(message, `${name} has already checked in today at ${existing.checkIn}`, 'warning');
+        return;
+      }
+
+      const staff = getStaffList().find(s => s.id === staffId);
+      const expectedTime = staff ? staff.checkInTime : WORK_START_TIME;
+
+      const currentTime = getTimeOnly();
+      const isLate = currentTime > expectedTime;
+
+      const newRecord = {
+        name: name,
+        staffId: staffId,
+        date: today,
+        checkIn: getTime(),
+        checkOut: '',
+        status: 'Present',
+        isLate: isLate,
+        expectedCheckInTime: expectedTime
+      };
+
+      records.push(newRecord);
+      saveRecords(records);
+
+      const lateMsg = isLate ? ' (⚠️ LATE)' : '';
+      showMessage(message, `✓ ${name} checked in at ${newRecord.checkIn}${lateMsg}`, 'success');
+
+      document.getElementById('name').value = '';
+      document.getElementById('staffId').value = '';
+
+      setTimeout(() => showReport(), 500);
+    }
+
+    // ========================= CHECK OUT =========================
+    function checkOut() {
+      const staffId = document.getElementById('outId').value.trim();
+      const message = document.getElementById('outMessage');
+
+      if (!staffId) {
+        showMessage(message, 'Please enter Staff ID', 'error');
+        return;
+      }
+
+      let records = getRecords();
+      let today = getDate();
+
+      const record = records.find(r => r.staffId === staffId && r.date === today);
+
+      if (!record) {
+        showMessage(message, 'No check-in record found for this staff ID today', 'error');
+        return;
+      }
+
+      if (record.checkOut !== '') {
+        showMessage(message, 'This staff member has already checked out today', 'warning');
+        return;
+      }
+
+      record.checkOut = getTime();
+      saveRecords(records);
+
+      showMessage(message, `✓ Staff ${staffId} checked out at ${record.checkOut}`, 'success');
+      document.getElementById('outId').value = '';
+
+      setTimeout(() => showReport(), 500);
+    }
+
+    // ========================= DAILY REPORT =========================
+    function showReport() {
+      const today = getDate();
+      const records = getRecords();
+      const todayRecords = records.filter(r => r.date === today);
+
+      updateStats(todayRecords);
+      displayAttendanceTable(todayRecords, 'report-content');
+    }
+
+    function updateStats(records) {
+      const present = records.length;
+      const late = records.filter(r => r.isLate).length;
+      const checkedOut = records.filter(r => r.checkOut !== '').length;
+
+      document.getElementById('statPresent').textContent = present;
+      document.getElementById('statLate').textContent = late;
+      document.getElementById('statAbsent').textContent = '0';
+      document.getElementById('statCheckedOut').textContent = checkedOut;
+    }
+
+    function displayAttendanceTable(records, containerId) {
+      const container = document.getElementById(containerId);
+
+      if (records.length === 0) {
+        container.innerHTML = '<div class="no-record">No attendance records for this period.</div>';
+        return;
+      }
+
+      let html = '<table><tr><th>Staff Name</th><th>ID</th><th>Check-In</th><th>Check-Out</th><th>Status</th></tr>';
+
+      records.forEach(r => {
+        const badgeClass = r.isLate ? 'late' : (r.checkOut ? 'present' : 'late');
+        const statusText = r.isLate ? 'Late' : 'On-Time';
+        const checkOutText = r.checkOut || '<em>Not checked out</em>';
+
+        html += `<tr>
+          <td>${r.name}</td>
+          <td>${r.staffId}</td>
+          <td>${r.checkIn}</td>
+          <td>${checkOutText}</td>
+          <td><span class="badge ${badgeClass}">${statusText}</span></td>
+        </tr>`;
+      });
+
+      html += '</table>';
+      container.innerHTML = html;
+    }
+
+    function exportToCSV() {
+      const today = getDate();
+      const records = getRecords().filter(r => r.date === today);
+
+      if (records.length === 0) {
+        alert('No records to export');
+        return;
+      }
+
+      let csv = 'Staff Name,Staff ID,Date,Check-In,Check-Out,Status\n';
+
+      records.forEach(r => {
+        const checkOut = r.checkOut || 'Not checked out';
+        csv += `"${r.name}","${r.staffId}","${r.date}","${r.checkIn}","${checkOut}","${r.status}"\n`;
+      });
+
+      downloadCSV(csv, `Attendance_${today}.csv`);
+    }
+
+    function downloadCSV(csv, filename) {
+      const link = document.createElement('a');
+      link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      link.download = filename;
+      link.click();
+    }
+
+    // ========================= HISTORY =========================
+    function filterHistory() {
+      const fromDate = document.getElementById('historyFrom').value;
+      const toDate = document.getElementById('historyTo').value;
+
+      if (!fromDate || !toDate) {
+        alert('Please select both from and to dates');
+        return;
+      }
+
+      const records = getRecords().filter(r => r.date >= fromDate && r.date <= toDate);
+
+      if (records.length === 0) {
+        document.getElementById('history-content').innerHTML = 
+          '<div class="no-record">No records found for this date range.</div>';
+        return;
+      }
+
+      displayAttendanceTable(records, 'history-content');
+    }
+
+    // ========================= ADMIN PANEL =========================
+    function loginAdmin() {
+      const pass = document.getElementById('adminPass').value;
+      const message = document.getElementById('adminMessage');
+
+      if (pass === ADMIN_PASSWORD) {
+        document.getElementById('adminPanel').classList.remove('hidden');
+        document.getElementById('adminPass').value = '';
+        showMessage(message, '✓ Admin logged in successfully', 'success');
+        updateAdminStats();
+        displayStaffManagement();
+      } else {
+        showMessage(message, '✗ Invalid password', 'error');
+      }
+    }
+
+    function updateAdminStats() {
+      const records = getRecords();
+      const staff = getStaffList();
+      const totalDays = new Set(records.map(r => r.date)).size;
+
+      let html = `
+        <table>
+          <tr><td><strong>Total Attendance Records</strong></td><td>${records.length}</td></tr>
+          <tr><td><strong>Total Days Tracked</strong></td><td>${totalDays}</td></tr>
+          <tr><td><strong>Registered Staff</strong></td><td>${staff.length}</td></tr>
+          <tr><td><strong>Active Staff</strong></td><td>${staff.filter(s => s.active).length}</td></tr>
+          <tr><td><strong>Storage Used</strong></td><td>${(new Blob([JSON.stringify(records)]).size / 1024).toFixed(2)} KB</td></tr>
+        </table>
+      `;
+
+      document.getElementById('systemStats').innerHTML = html;
+    }
+
+    function displayStaffManagement() {
+      const staff = getStaffList();
+      let html = '<table><tr><th>Name</th><th>ID</th><th>Department</th><th>Actions</th></tr>';
+
+      staff.forEach(s => {
+        html += `<tr>
+          <td>${s.name}</td>
+          <td>${s.id}</td>
+          <td>${s.department || '-'}</td>
+          <td>
+            <button class="smallButton secondary" onclick="toggleStaffStatus('${s.id}')">
+              ${s.active ? 'Deactivate' : 'Activate'}
+            </button>
+            <button class="smallButton danger" onclick="deleteStaff('${s.id}')">Delete</button>
+          </td>
+        </tr>`;
+      });
+
+      html += '</table>';
+      document.getElementById('staffManagementList').innerHTML = html;
+    }
+
+    function toggleStaffStatus(staffId) {
+      let staff = getStaffList();
+      const s = staff.find(x => x.id === staffId);
+
+      if (s) {
+        s.active = !s.active;
+        saveStaffList(staff);
+        displayStaffManagement();
+        updateStaffDropdown();
+        showMessage(document.getElementById('adminMessage'), `Staff status updated`, 'success');
+      }
+    }
+
+    function deleteStaff(staffId) {
+      openDeleteModal(`Delete staff member?`, () => {
+        let staff = getStaffList();
+        staff = staff.filter(s => s.id !== staffId);
+        saveStaffList(staff);
+        displayStaffManagement();
+        updateStaffDropdown();
+        showMessage(document.getElementById('adminMessage'), `Staff deleted successfully`, 'success');
+      });
+    }
+
+    function clearAllRecords() {
+      openDeleteModal(`Clear all attendance records? This cannot be undone.`, () => {
+        localStorage.setItem("staffAttendance", JSON.stringify([]));
+        updateAdminStats();
+        showMessage(document.getElementById('adminMessage'), `All records cleared`, 'success');
+      });
+    }
+
+    function resetStaffDatabase() {
+      openDeleteModal(`Reset staff database? This will delete all registered staff.`, () => {
+        localStorage.setItem("staffDatabase", JSON.stringify([]));
+        updateStaffDropdown();
+        displayStaffList();
+        displayStaffManagement();
+        updateAdminStats();
+        showMessage(document.getElementById('adminMessage'), `Staff database reset`, 'success');
+      });
+    }
+
+    function downloadFullBackup() {
+      const records = getRecords();
+      const staff = getStaffList();
+      const backup = {
+        attendance: records,
+        staff: staff,
+        backupDate: getDate() + ' ' + getTime()
+      };
+
+      const json = JSON.stringify(backup, null, 2);
+      const link = document.createElement('a');
+      link.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(json);
+      link.download = `Attendance_Backup_${getDate()}.json`;
+      link.click();
+
+      showMessage(document.getElementById('adminMessage'), `Backup downloaded`, 'success');
+    }
+
+    // ========================= UTILITIES =========================
+    function showMessage(element, text, type = 'success') {
+      element.textContent = text;
+      element.className = 'message ' + type;
+      element.style.display = 'block';
+
+      setTimeout(() => {
+        element.style.display = 'none';
+      }, 5000);
+    }
+
+    function openDeleteModal(message, callback) {
+      document.getElementById('deleteMessage').textContent = message;
+      document.getElementById('deleteModal').classList.add('show');
+      window.deleteCallback = callback;
+    }
+
+    function confirmDelete() {
+      if (window.deleteCallback) {
+        window.deleteCallback();
+      }
+      closeModal('deleteModal');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('show');
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('deleteModal');
+      if (event.target === modal) {
+        modal.classList.remove('show');
+      }
+    };
+  </script>
 
 </body>
 </html>
