@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Staff Attendance System</title>
+  <!-- QR Code Scanner Library -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <!-- QR Code Generator Library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -357,6 +361,72 @@
       margin-bottom: 15px;
     }
 
+    /* QR Scanner Styles */
+    .qr-scanner-section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      border: 2px dashed #123c69;
+    }
+
+    #qrVideo, #qrVideoOut {
+      max-width: 100%;
+      width: 100%;
+      max-height: 400px;
+      border-radius: 8px;
+      border: 2px solid #123c69;
+      background: #000;
+    }
+
+    .camera-controls {
+      margin: 15px 0;
+      text-align: center;
+    }
+
+    .camera-controls button {
+      width: auto;
+      padding: 10px 20px;
+      margin: 5px;
+      display: inline-block;
+    }
+
+    .qr-result {
+      margin-top: 15px;
+      padding: 15px;
+      background: #e8f5e9;
+      border-radius: 8px;
+      border-left: 4px solid #4caf50;
+      display: none;
+    }
+
+    .qr-result.show {
+      display: block;
+    }
+
+    .qr-code-display {
+      text-align: center;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      margin: 15px 0;
+      border: 1px solid #ddd;
+    }
+
+    .qr-code-display canvas {
+      max-width: 250px;
+      border: 2px solid #123c69;
+      padding: 10px;
+      background: white;
+    }
+
+    .qr-download-btn {
+      margin-top: 10px;
+      width: auto;
+      padding: 10px 20px;
+      display: inline-block;
+    }
+
     @media (max-width: 768px) {
       .two-columns {
         grid-template-columns: 1fr;
@@ -387,6 +457,10 @@
         width: 100%;
         margin: 5px 0;
       }
+
+      #qrVideo, #qrVideoOut {
+        max-height: 300px;
+      }
     }
   </style>
 </head>
@@ -395,10 +469,10 @@
 
   <header>
     <h1>👥 Staff Attendance System</h1>
-    <p>Professional Attendance Tracking & Management</p>
+    <p>Professional Attendance Tracking & Management with QR Code Scanning</p>
     <div class="nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('checkin')">Check-In</button>
-      <button class="tab-btn" onclick="switchTab('checkout')">Check-Out</button>
+      <button class="tab-btn active" onclick="switchTab('checkin')">QR Check-In</button>
+      <button class="tab-btn" onclick="switchTab('checkoutqr')">QR Check-Out</button>
       <button class="tab-btn" onclick="switchTab('report')">Daily Report</button>
       <button class="tab-btn" onclick="switchTab('history')">History</button>
       <button class="tab-btn" onclick="switchTab('register')">Register Staff</button>
@@ -408,10 +482,34 @@
 
   <div class="container">
 
-    <!-- CHECK IN -->
+    <!-- QR CHECK IN -->
     <div id="checkin" class="card active">
-      <h2>✓ Staff Check-In</h2>
+      <h2>📱 QR Code Check-In</h2>
 
+      <div class="qr-scanner-section">
+        <label>📷 Scan Your QR Code</label>
+        <video id="qrVideo" autoplay></video>
+
+        <div class="camera-controls">
+          <button onclick="startCamera()" class="secondary smallButton">Start Camera</button>
+          <button onclick="stopCamera()" class="secondary smallButton">Stop Camera</button>
+          <button onclick="takeSnapshot()" class="secondary smallButton">📸 Snapshot</button>
+        </div>
+
+        <canvas id="qrCanvas" style="display:none;"></canvas>
+      </div>
+
+      <div id="inMessage" class="message"></div>
+
+      <div id="qrCheckInResult" class="qr-result">
+        <strong>✓ Check-In Successful!</strong>
+        <p>Staff: <span id="checkinStaffName"></span></p>
+        <p>Time: <span id="checkinTime"></span></p>
+        <p id="checkinLateWarning" style="color: #ff6b00; display: none;">⚠️ You are LATE</p>
+      </div>
+
+      <!-- Fallback: Manual Entry -->
+      <h3>Manual Entry (Fallback)</h3>
       <label>Staff Name</label>
       <select id="name">
         <option value="">Select Staff Member</option>
@@ -420,21 +518,40 @@
       <label>Staff ID</label>
       <input type="text" id="staffId" placeholder="Staff ID (auto-filled)" readonly>
 
-      <button onclick="checkIn()">CHECK IN</button>
-
-      <div id="inMessage" class="message"></div>
+      <button onclick="checkIn()">CHECK IN (Manual)</button>
     </div>
 
-    <!-- CHECK OUT -->
-    <div id="checkout" class="card">
-      <h2>✗ Staff Check-Out</h2>
+    <!-- QR CHECK OUT -->
+    <div id="checkoutqr" class="card">
+      <h2>📱 QR Code Check-Out</h2>
 
+      <div class="qr-scanner-section">
+        <label>📷 Scan Your QR Code</label>
+        <video id="qrVideoOut" autoplay></video>
+
+        <div class="camera-controls">
+          <button onclick="startCameraCheckout()" class="secondary smallButton">Start Camera</button>
+          <button onclick="stopCameraCheckout()" class="secondary smallButton">Stop Camera</button>
+          <button onclick="takeSnapshotCheckout()" class="secondary smallButton">📸 Snapshot</button>
+        </div>
+
+        <canvas id="qrCanvasOut" style="display:none;"></canvas>
+      </div>
+
+      <div id="outMessage" class="message"></div>
+
+      <div id="qrCheckOutResult" class="qr-result">
+        <strong>✓ Check-Out Successful!</strong>
+        <p>Staff ID: <span id="checkoutStaffId"></span></p>
+        <p>Time: <span id="checkoutTime"></span></p>
+      </div>
+
+      <!-- Fallback: Manual Entry -->
+      <h3>Manual Entry (Fallback)</h3>
       <label>Staff ID</label>
       <input type="text" id="outId" placeholder="Enter staff ID">
 
-      <button class="checkout" onclick="checkOut()">CHECK OUT</button>
-
-      <div id="outMessage" class="message"></div>
+      <button class="checkout" onclick="checkOut()">CHECK OUT (Manual)</button>
     </div>
 
     <!-- DAILY REPORT -->
@@ -530,6 +647,17 @@
       <div id="adminMessage" class="message"></div>
 
       <div id="adminPanel" class="hidden">
+        <h3>Generate QR Codes</h3>
+        <p>Select a staff member to generate their QR code:</p>
+        <label>Staff Member</label>
+        <select id="qrStaffSelect">
+          <option value="">Select Staff Member</option>
+        </select>
+        <button onclick="generateStaffQR()" class="secondary smallButton">Generate QR Code</button>
+        <button onclick="downloadAllQRCodes()" class="secondary smallButton">📥 Download All QR Codes</button>
+
+        <div id="qrCodeContainer"></div>
+
         <h3>Admin Controls</h3>
 
         <button class="danger smallButton" onclick="clearAllRecords()">Clear All Attendance Records</button>
@@ -563,6 +691,10 @@
     const WORK_START_TIME = "09:00";
     const LATE_THRESHOLD_MINUTES = 15;
 
+    // ========================= GLOBAL VARIABLES =========================
+    let qrScannerActive = false;
+    let qrScannerOutActive = false;
+
     // ========================= INITIALIZATION =========================
     document.addEventListener('DOMContentLoaded', function() {
       setDefaultDates();
@@ -582,9 +714,342 @@
       document.getElementById(tabName).classList.add('active');
       event.target.classList.add('active');
 
+      // Stop any active cameras when switching tabs
+      stopCamera();
+      stopCameraCheckout();
+
       if (tabName === 'report') {
         showReport();
       }
+    }
+
+    // ========================= QR CODE SCANNING =========================
+    function startCamera() {
+      qrScannerActive = true;
+      const video = document.getElementById('qrVideo');
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          video.srcObject = stream;
+          scanQRCode();
+        })
+        .catch(err => {
+          showMessage(document.getElementById('inMessage'), '❌ Cannot access camera: ' + err.message, 'error');
+        });
+    }
+
+    function stopCamera() {
+      qrScannerActive = false;
+      const video = document.getElementById('qrVideo');
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+    }
+
+    function startCameraCheckout() {
+      qrScannerOutActive = true;
+      const video = document.getElementById('qrVideoOut');
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          video.srcObject = stream;
+          scanQRCodeCheckout();
+        })
+        .catch(err => {
+          showMessage(document.getElementById('outMessage'), '❌ Cannot access camera: ' + err.message, 'error');
+        });
+    }
+
+    function stopCameraCheckout() {
+      qrScannerOutActive = false;
+      const video = document.getElementById('qrVideoOut');
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+    }
+
+    function scanQRCode() {
+      const video = document.getElementById('qrVideo');
+      const canvas = document.getElementById('qrCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const scan = () => {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+          if (code) {
+            processQRCodeCheckIn(code.data);
+            stopCamera();
+            return;
+          }
+        }
+
+        if (qrScannerActive) {
+          requestAnimationFrame(scan);
+        }
+      };
+
+      scan();
+    }
+
+    function scanQRCodeCheckout() {
+      const video = document.getElementById('qrVideoOut');
+      const canvas = document.getElementById('qrCanvasOut');
+      const ctx = canvas.getContext('2d');
+
+      const scan = () => {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+          if (code) {
+            processQRCodeCheckOut(code.data);
+            stopCameraCheckout();
+            return;
+          }
+        }
+
+        if (qrScannerOutActive) {
+          requestAnimationFrame(scan);
+        }
+      };
+
+      scan();
+    }
+
+    function takeSnapshot() {
+      const video = document.getElementById('qrVideo');
+      const canvas = document.getElementById('qrCanvas');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+      if (code) {
+        processQRCodeCheckIn(code.data);
+        stopCamera();
+      } else {
+        showMessage(document.getElementById('inMessage'), '❌ No QR code detected. Try again.', 'error');
+      }
+    }
+
+    function takeSnapshotCheckout() {
+      const video = document.getElementById('qrVideoOut');
+      const canvas = document.getElementById('qrCanvasOut');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+      if (code) {
+        processQRCodeCheckOut(code.data);
+        stopCameraCheckout();
+      } else {
+        showMessage(document.getElementById('outMessage'), '❌ No QR code detected. Try again.', 'error');
+      }
+    }
+
+    function processQRCodeCheckIn(qrData) {
+      // QR code should contain: staffId|staffName
+      const parts = qrData.split('|');
+      
+      if (parts.length < 2) {
+        showMessage(document.getElementById('inMessage'), '❌ Invalid QR code format', 'error');
+        return;
+      }
+
+      const staffId = parts[0].trim();
+      const staffName = parts[1].trim();
+
+      // Perform check-in with QR data
+      let records = getRecords();
+      let today = getDate();
+
+      let existing = records.find(r => r.staffId === staffId && r.date === today);
+
+      if (existing) {
+        showMessage(document.getElementById('inMessage'), `⚠️ ${staffName} has already checked in today at ${existing.checkIn}`, 'warning');
+        return;
+      }
+
+      const staff = getStaffList().find(s => s.id === staffId);
+      const expectedTime = staff ? staff.checkInTime : WORK_START_TIME;
+
+      const currentTime = getTimeOnly();
+      const isLate = currentTime > expectedTime;
+
+      const newRecord = {
+        name: staffName,
+        staffId: staffId,
+        date: today,
+        checkIn: getTime(),
+        checkOut: '',
+        status: 'Present',
+        isLate: isLate,
+        expectedCheckInTime: expectedTime
+      };
+
+      records.push(newRecord);
+      saveRecords(records);
+
+      // Show success result
+      const resultDiv = document.getElementById('qrCheckInResult');
+      document.getElementById('checkinStaffName').textContent = staffName;
+      document.getElementById('checkinTime').textContent = newRecord.checkIn;
+      
+      if (isLate) {
+        document.getElementById('checkinLateWarning').style.display = 'block';
+      } else {
+        document.getElementById('checkinLateWarning').style.display = 'none';
+      }
+
+      resultDiv.classList.add('show');
+      showMessage(document.getElementById('inMessage'), `✓ ${staffName} checked in successfully${isLate ? ' (⚠️ LATE)' : ''}`, 'success');
+
+      setTimeout(() => {
+        showReport();
+        resultDiv.classList.remove('show');
+      }, 3000);
+    }
+
+    function processQRCodeCheckOut(qrData) {
+      // QR code should contain: staffId|staffName
+      const parts = qrData.split('|');
+      
+      if (parts.length < 1) {
+        showMessage(document.getElementById('outMessage'), '❌ Invalid QR code format', 'error');
+        return;
+      }
+
+      const staffId = parts[0].trim();
+
+      let records = getRecords();
+      let today = getDate();
+
+      const record = records.find(r => r.staffId === staffId && r.date === today);
+
+      if (!record) {
+        showMessage(document.getElementById('outMessage'), '❌ No check-in record found for this staff ID today', 'error');
+        return;
+      }
+
+      if (record.checkOut !== '') {
+        showMessage(document.getElementById('outMessage'), '⚠️ This staff member has already checked out today', 'warning');
+        return;
+      }
+
+      record.checkOut = getTime();
+      saveRecords(records);
+
+      // Show success result
+      const resultDiv = document.getElementById('qrCheckOutResult');
+      document.getElementById('checkoutStaffId').textContent = staffId;
+      document.getElementById('checkoutTime').textContent = record.checkOut;
+      resultDiv.classList.add('show');
+
+      showMessage(document.getElementById('outMessage'), `✓ Staff ${staffId} checked out successfully`, 'success');
+
+      setTimeout(() => {
+        showReport();
+        resultDiv.classList.remove('show');
+      }, 3000);
+    }
+
+    // ========================= QR CODE GENERATION =========================
+    function generateStaffQR() {
+      const staffSelect = document.getElementById('qrStaffSelect');
+      const staffId = staffSelect.value;
+
+      if (!staffId) {
+        showMessage(document.getElementById('adminMessage'), 'Please select a staff member', 'error');
+        return;
+      }
+
+      const staff = getStaffList().find(s => s.id === staffId);
+      if (!staff) return;
+
+      // QR code contains: staffId|staffName
+      const qrData = `${staff.id}|${staff.name}`;
+
+      const container = document.getElementById('qrCodeContainer');
+      container.innerHTML = `
+        <div class="qr-code-display">
+          <h3>${staff.name}</h3>
+          <p>Staff ID: ${staff.id}</p>
+          <div id="qrCanvas${staffId}"></div>
+          <button class="qr-download-btn" onclick="downloadQR('${staffId}', '${staff.name}')">📥 Download QR Code</button>
+        </div>
+      `;
+
+      QRCode.toCanvas(
+        document.getElementById(`qrCanvas${staffId}`),
+        qrData,
+        { width: 250, margin: 2, color: { dark: '#123c69', light: '#ffffff' } }
+      );
+    }
+
+    function downloadQR(staffId, staffName) {
+      const staff = getStaffList().find(s => s.id === staffId);
+      if (!staff) return;
+
+      const qrData = `${staff.id}|${staff.name}`;
+      const canvas = document.getElementById(`qrCanvas${staffId}`).querySelector('canvas');
+
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `${staffName}_QR_${staffId}.png`;
+      link.click();
+    }
+
+    function downloadAllQRCodes() {
+      const staff = getStaffList().filter(s => s.active);
+
+      if (staff.length === 0) {
+        showMessage(document.getElementById('adminMessage'), 'No active staff members', 'error');
+        return;
+      }
+
+      const container = document.getElementById('qrCodeContainer');
+      container.innerHTML = '';
+
+      staff.forEach(s => {
+        const qrData = `${s.id}|${s.name}`;
+        const canvasId = `qrCanvas${s.id}`;
+
+        const div = document.createElement('div');
+        div.className = 'qr-code-display';
+        div.innerHTML = `
+          <h3>${s.name}</h3>
+          <p>Staff ID: ${s.id}</p>
+          <div id="${canvasId}"></div>
+          <button class="qr-download-btn smallButton" onclick="downloadQR('${s.id}', '${s.name}')">📥 Download</button>
+        `;
+
+        container.appendChild(div);
+
+        QRCode.toCanvas(
+          document.getElementById(canvasId),
+          qrData,
+          { width: 200, margin: 2, color: { dark: '#123c69', light: '#ffffff' } }
+        );
+      });
     }
 
     // ========================= STORAGE MANAGEMENT =========================
@@ -675,6 +1140,7 @@
 
       updateStaffDropdown();
       displayStaffList();
+      updateQRDropdown();
     }
 
     function updateStaffDropdown() {
@@ -697,6 +1163,22 @@
       dropdown.addEventListener('change', function() {
         const selected = this.options[this.selectedIndex];
         document.getElementById('staffId').value = selected.dataset.id || '';
+      });
+    }
+
+    function updateQRDropdown() {
+      const staff = getStaffList();
+      const dropdown = document.getElementById('qrStaffSelect');
+
+      dropdown.innerHTML = '<option value="">Select Staff Member</option>';
+
+      staff.forEach(s => {
+        if (s.active) {
+          const option = document.createElement('option');
+          option.value = s.id;
+          option.textContent = s.name + ' (' + s.id + ')';
+          dropdown.appendChild(option);
+        }
       });
     }
 
@@ -916,6 +1398,7 @@
         showMessage(message, '✓ Admin logged in successfully', 'success');
         updateAdminStats();
         displayStaffManagement();
+        updateQRDropdown();
       } else {
         showMessage(message, '✗ Invalid password', 'error');
       }
@@ -970,6 +1453,7 @@
         saveStaffList(staff);
         displayStaffManagement();
         updateStaffDropdown();
+        updateQRDropdown();
         showMessage(document.getElementById('adminMessage'), `Staff status updated`, 'success');
       }
     }
@@ -981,6 +1465,7 @@
         saveStaffList(staff);
         displayStaffManagement();
         updateStaffDropdown();
+        updateQRDropdown();
         showMessage(document.getElementById('adminMessage'), `Staff deleted successfully`, 'success');
       });
     }
@@ -997,9 +1482,9 @@
       openDeleteModal(`Reset staff database? This will delete all registered staff.`, () => {
         localStorage.setItem("staffDatabase", JSON.stringify([]));
         updateStaffDropdown();
+        updateQRDropdown();
         displayStaffList();
         displayStaffManagement();
-        updateAdminStats();
         showMessage(document.getElementById('adminMessage'), `Staff database reset`, 'success');
       });
     }
@@ -1010,32 +1495,28 @@
       const backup = {
         attendance: records,
         staff: staff,
-        backupDate: getDate() + ' ' + getTime()
+        backupDate: new Date().toISOString()
       };
 
-      const json = JSON.stringify(backup, null, 2);
       const link = document.createElement('a');
-      link.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(json);
+      link.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backup, null, 2));
       link.download = `Attendance_Backup_${getDate()}.json`;
       link.click();
 
-      showMessage(document.getElementById('adminMessage'), `Backup downloaded`, 'success');
+      showMessage(document.getElementById('adminMessage'), `✓ Backup downloaded`, 'success');
     }
 
-    // ========================= UTILITIES =========================
-    function showMessage(element, text, type = 'success') {
-      element.textContent = text;
-      element.className = 'message ' + type;
+    // ========================= MODALS & MESSAGES =========================
+    function showMessage(element, message, type = 'success') {
+      element.className = `message ${type}`;
+      element.textContent = message;
       element.style.display = 'block';
-
-      setTimeout(() => {
-        element.style.display = 'none';
-      }, 5000);
     }
 
     function openDeleteModal(message, callback) {
+      const modal = document.getElementById('deleteModal');
       document.getElementById('deleteMessage').textContent = message;
-      document.getElementById('deleteModal').classList.add('show');
+      modal.classList.add('show');
       window.deleteCallback = callback;
     }
 
@@ -1049,14 +1530,7 @@
     function closeModal(modalId) {
       document.getElementById(modalId).classList.remove('show');
     }
-
-    window.onclick = function(event) {
-      const modal = document.getElementById('deleteModal');
-      if (event.target === modal) {
-        modal.classList.remove('show');
-      }
-    };
   </script>
-
 </body>
+
 </html>
