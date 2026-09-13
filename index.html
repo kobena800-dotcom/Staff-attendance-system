@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Staff Attendance</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f5f9;
+  color: #222;
+}
+
+header {
+  background: #123c69;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 25px;
+}
+
+.container {
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 15px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+h2 {
+  margin-top: 0;
+  color: #123c69;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 7px;
+  background: #123c69;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0d2e50;
+}
+
+.green {
+  background: #16823b;
+}
+
+.green:hover {
+  background: #10632c;
+}
+
+.red {
+  background: #c62828;
+}
+
+.red:hover {
+  background: #9e1f1f;
+}
+
+.result {
+  margin-top: 15px;
+  padding: 15px;
+  background: #eef6ff;
+  border-radius: 8px;
+  display: none;
+}
+
+.success {
+  color: #16823b;
+  font-weight: bold;
+}
+
+.error {
+  color: #c62828;
+  font-weight: bold;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background: #123c69;
+  color: white;
+}
+
+#qrBox {
+  text-align: center;
+}
+
+#qrCode {
+  margin: 15px auto;
+  width: 220px;
+  min-height: 50px;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Company Staff Attendance System</h1>
+  <p>Secure Check-In & Check-Out</p>
+</header>
+
+<div class="container">
+
+  <!-- STAFF CHECK-IN -->
+  <div class="card">
+    <h2>Staff Check-In</h2>
+
+    <label>Staff ID</label>
+    <input type="text" id="checkInStaffId" placeholder="Enter Staff ID">
+
+    <label>Staff Name</label>
+    <input type="text" id="checkInName" placeholder="Enter full name">
+
+    <button class="green" onclick="checkIn()">
+      Check In
+    </button>
+
+    <div id="checkInResult" class="result"></div>
+  </div>
+
+
+  <!-- STAFF CHECK-OUT -->
+  <div class="card">
+    <h2>Staff Check-Out</h2>
+
+    <label>Staff ID</label>
+    <input type="text" id="checkOutStaffId" placeholder="Enter Staff ID">
+
+    <label>Staff Name</label>
+    <input type="text" id="checkOutName" placeholder="Enter full name">
+
+    <button class="red" onclick="checkOut()">
+      Check Out
+    </button>
+
+    <div id="checkOutResult" class="result"></div>
+  </div>
+
+
+  <!-- COMPANY QR -->
+  <div class="card" id="qrBox">
+    <h2>Company Attendance QR Code</h2>
+
+    <p>
+      Staff can scan this company QR code to open the attendance system.
+    </p>
+
+    <div id="qrCode"></div>
+
+    <button onclick="generateQR()">
+      Generate / Refresh QR Code
+    </button>
+  </div>
+
+
+  <!-- DAILY REPORT -->
+  <div class="card">
+    <h2>Daily Staff Report</h2>
+
+    <button onclick="showReport()">
+      View Today's Report
+    </button>
+
+    <button onclick="clearRecords()" class="red">
+      Clear Attendance Records
+    </button>
+
+    <div id="report" class="result"></div>
+  </div>
+
+</div>
+
+<footer>
+  Company Attendance System
+</footer>
+
+
+<script>
+
+/* ================================
+   ATTENDANCE STORAGE
+================================ */
+
+let attendance =
+  JSON.parse(localStorage.getItem("attendanceRecords")) || [];
+
+
+/* ================================
+   GET TODAY'S DATE
+================================ */
+
+function getToday() {
+  const now = new Date();
+
+  return now.toLocaleDateString();
+}
+
+
+/* ================================
+   GET CURRENT TIME
+================================ */
+
+function getTime() {
+  const now = new Date();
+
+ 
