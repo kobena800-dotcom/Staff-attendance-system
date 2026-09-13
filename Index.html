@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Staff Attendance System</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    header {
+      background: #123c69;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 25px;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      font-size: 14px;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1000px;
+      margin: 25px auto;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      color: #123c69;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 7px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      margin-top: 15px;
+      background: #123c69;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #0d2d4f;
+    }
+
+    .checkout {
+      background: #b3261e;
+    }
+
+    .checkout:hover {
+      background: #8f1d18;
+    }
+
+    .success {
+      margin-top: 15px;
+      padding: 12px;
+      background: #e8f5e9;
+      color: #176b2c;
+      border-radius: 7px;
+      display: none;
+    }
+
+    .report {
+      margin-top: 15px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #123c69;
+      color: white;
+    }
+
+    .qr-box {
+      text-align: center;
+      padding: 20px;
+      border: 2px dashed #123c69;
+      border-radius: 10px;
+    }
+
+    .qr-box img {
+      width: 220px;
+      max-width: 100%;
+      margin: 15px auto;
+    }
+
+    .empty {
+      text-align: center;
+      color: #777;
+      padding: 15px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #777;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 21px;
+      }
+
+      .container {
+        width: 92%;
+      }
+
+      th,
+      td {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Staff Attendance System</h1>
+  <p>Secure Staff Check-In & Check-Out</p>
+</header>
+
+<div class="container">
+
+  <!-- STAFF CHECK-IN -->
+  <div class="card">
+    <h2>Staff Check-In</h2>
+
+    <label for="staffName">Staff Name</label>
+    <input
+      type="text"
+      id="staffName"
+      placeholder="Enter staff name"
+    >
+
+    <label for="staffId">Staff ID</label>
+    <input
+      type="text"
+      id="staffId"
+      placeholder="Enter staff ID"
+    >
+
+    <button onclick="checkIn()">
+      Check In
+    </button>
+
+    <div id="checkInMessage" class="success"></div>
+  </div>
+
+
+  <!-- STAFF CHECK-OUT -->
+  <div class="card">
+    <h2>Staff Check-Out</h2>
+
+    <label for="checkoutId">Staff ID</label>
+    <input
+      type="text"
+      id="checkoutId"
+      placeholder="Enter your staff ID"
+    >
+
+    <button
+      class="checkout"
+      onclick="checkOut()"
+    >
+      Check Out
+    </button>
+
+    <div id="checkOutMessage" class="success"></div>
+  </div>
+
+
+  <!-- COMPANY QR -->
+  <div class="card">
+    <h2>Company Attendance QR Code</h2>
+
+    <div class="qr-box">
+
+      <p>
+        Staff can scan the company QR code
+        to access attendance.
+      </p>
+
+      <!-- Temporary QR image -->
+      <img
+        src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Staff-Attendance-System"
+        alt="Company Attendance QR Code"
+      >
+
+      <p>
+        Company Attendance QR
+      </p>
+
+    </div>
+  </div>
+
+
+  <!-- DAILY REPORT -->
+  <div class="card">
+
+    <h2>Daily Staff Report</h2>
+
+    <button onclick="showReport()">
+      View Daily Report
+    </button>
+
+    <div id="report" class="report">
+      <div class="empty">
+        No report loaded.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  Staff Attendance System © 2026
+</footer>
+
+
+<script>
+
+  /*
+    STAFF ATTENDANCE DATA
+
+    Information is stored in the browser
+    using localStorage.
+  */
+
+  function getAttendance() {
+
+    const data =
+      localStorage.getItem("attendanceData");
+
+    if (!data) {
+      return [];
+    }
+
+    return JSON.parse(data);
+  }
+
+
+  function saveAttendance(data) {
+
+    localStorage.setItem(
+      "attendanceData",
+      JSON.stringify(data)
+    );
+
+  }
+
+
+  // GET CURRENT DATE
+  function getDate() {
+
+    const now = new Date();
+
+    return now.toLocaleDateString();
+
+  }
+
+
+  // GET CURRENT TIME
+  function getTime() {
+
+    const now = new Date();
+
+    return now.toLocaleTimeString();
+
+  }
+
+
+  // CHECK-IN
+  function checkIn() {
+
+    const name =
+      document.getElementById("staffName").value.trim();
+
+    const id =
+      document.getElementById("staffId").value.trim();
+
+    const message =
+      document.getElementById("checkInMessage");
+
+
+    if (name === "" || id === "") {
+
+      alert(
+        "Please enter both Staff Name and Staff ID."
+      );
+
+      return;
+    }
+
+
+    let attendance = getAttendance();
+
+
+    // Check if staff already checked in today
+
+    const today = getDate();
+
+    const alreadyCheckedIn =
+      attendance.find(function(record) {
+
+        return (
+          record.staffId === id &&
+          record.date === today &&
+          record.checkIn !== ""
+        );
+
+      });
+
+
+    if (alreadyCheckedIn) {
+
+      alert(
+        "This staff member has already checked in today."
+      );
+
+      return;
+    }
+
+
+    const record = {
+
+      staffName: name,
+
+      staffId: id,
+
+      date: today,
+
+      checkIn: getTime(),
+
+      checkOut: "",
+
+      punctuality: "Pending"
+
+    };
+
+
+    attendance.push(record);
+
+    saveAttendance(attendance);
+
+
+    message.style.display = "block";
+
+    message.innerHTML =
+      "✓ Check-in successful for " +
+      name +
+      " at " +
+      record.checkIn;
+
+
+    document.getElementById("staffName").value = "";
+
+    document.getElementById("staffId").value = "";
+
+  }
+
+
+  // CHECK-OUT
+  function checkOut() {
+
+    const id =
+      document.getElementById("checkoutId").value.trim();
+
+    const message =
+      document.getElementById("checkOutMessage");
+
+
+    if (id === "") {
+
+      alert(
+        "Please enter your Staff ID."
+      );
+
+      return;
+    }
+
+
+    let attendance = getAttendance();
+
+    const today = getDate();
+
+
+    // Find today's attendance record
+
+    const record =
+      attendance.find(function(item) {
+
+        return (
+          item.staffId === id &&
+          item.date === today &&
+          item.checkIn !== "" &&
+          item.checkOut === ""
+        );
+
+      });
+
+
+    if (!record) {
+
+      alert(
+        "No active check-in was found for this Staff ID today."
+      );
+
+      return;
+    }
+
+
+    record.checkOut = getTime();
+
+
+    // Simple punctuality calculation
+
+    const checkInTime =
+      new Date(
+        today + " " + record.checkIn
+      );
+
+    const now =
+      new Date();
+
+
+    if (
+      now.getTime() -
+      checkInTime.getTime()
+      >= 0
+    ) {
+
+      record.punctuality = "Present";
+
+    }
+
+
+    saveAttendance(attendance);
+
+
+    message.style.display = "block";
+
+    message.innerHTML =
+      "✓ Check-out successful at " +
+      record.checkOut;
+
+
+    document.getElementById("checkoutId").value = "";
+
+  }
+
+
+  // SHOW DAILY REPORT
+  function showReport() {
+
+    const report =
+      document.getElementById("report");
+
+    const attendance =
+      getAttendance();
+
+    const today =
+      getDate();
+
+
+    const todayRecords =
+      attendance.filter(function(record) {
+
+        return record.date === today;
+
+      });
+
+
+    if (todayRecords.length === 0) {
+
+      report.innerHTML =
+        '<div class="empty">' +
+        'No attendance records for today.' +
+        '</div>';
+
+      return;
+    }
+
+
+    let html = `
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Staff Name</th>
+            <th>Staff ID</th>
+            <th>Date</th>
+            <th>Check-In</th>
+            <th>Check-Out</th>
+            <th>Status</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+    `;
+
+
+    todayRecords.forEach(function(record) {
+
+      html += `
+
+        <tr>
+
+          <td>${record.staffName}</td>
+
+          <td>${record.staffId}</td>
+
+          <td>${record.date}</td>
+
+          <td>${record.checkIn}</td>
+
+          <td>
+            ${
+              record.checkOut === ""
+              ? "Not checked out"
+              : record.checkOut
+            }
+          </td>
+
+          <td>${record.punctuality}</td>
+
+        </tr>
+
+      `;
+
+    });
+
+
+    html += `
+
+        </tbody>
+
+      </table>
+
+    `;
+
+
+    report.innerHTML = html;
+
+  }
+
+</script>
+
+</body>
+</html>
