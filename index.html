@@ -1,22 +1,17 @@
 <!DOCTYPE html>
-<html lang="en"><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Staff Attendance</title>
 
-  <title>Staff Attendance System</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-
     body {
-      background: #f4f6f8;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f2f4f7;
       color: #222;
     }
 
@@ -27,14 +22,379 @@
       text-align: center;
     }
 
-    header h1 {
-      font-size: 24px;
-      margin-bottom: 5px;
+    .container {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 15px;
     }
 
-    .container {
-      max-width: 1100px;
-      margin: 20px auto;
+    .card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background: #0b5ed7;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #084298;
+    }
+
+    .success {
+      background: #d1e7dd;
+      color: #0f5132;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #842029;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    #reader {
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background: #0b5ed7;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .status {
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Company Staff Attendance</h1>
+  <p>Staff Check-In & Check-Out System</p>
+</header>
+
+<div class="container">
+
+  <!-- STAFF ATTENDANCE -->
+  <div class="card">
+    <h2>Staff Attendance</h2>
+
+    <label>Staff ID</label>
+    <input type="text" id="staffId" placeholder="Enter Staff ID">
+
+    <label>Staff Name</label>
+    <input type="text" id="staffName" placeholder="Enter Staff Name">
+
+    <button onclick="startScanner()">Scan Company QR Code</button>
+
+    <div id="reader"></div>
+
+    <div id="message"></div>
+  </div>
+
+  <!-- TODAY'S REPORT -->
+  <div class="card">
+    <h2>Today's Staff Report</h2>
+
+    <button onclick="showReport()">Refresh Report</button>
+
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Staff ID</th>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Arrival</th>
+            <th>Closing</th>
+            <th>Punctuality</th>
+          </tr>
+        </thead>
+
+        <tbody id="reportBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COMPANY QR -->
+  <div class="card">
+    <h2>Company QR Code</h2>
+
+    <p>
+      This is the QR code that staff members scan at the company.
+    </p>
+
+    <button onclick="showCompanyQR()">Show Company QR</button>
+
+    <div id="companyQR" style="text-align:center;"></div>
+  </div>
+
+</div>
+
+<script>
+
+const COMPANY_QR_CODE = "COMPANY-ATTENDANCE-2026-SECURE";
+
+function getToday() {
+  const now = new Date();
+  return now.toISOString().split("T")[0];
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function getAttendance() {
+  return JSON.parse(localStorage.getItem("attendanceRecords") || "[]");
+}
+
+function saveAttendance(data) {
+  localStorage.setItem("attendanceRecords", JSON.stringify(data));
+}
+
+function showMessage(text, type) {
+  const box = document.getElementById("message");
+
+  box.className = type === "success" ? "success" : "error";
+  box.innerHTML = text;
+}
+
+function startScanner() {
+
+  const staffId = document.getElementById("staffId").value.trim();
+  const staffName = document.getElementById("staffName").value.trim();
+
+  if (!staffId || !staffName) {
+    showMessage("Please enter the Staff ID and Staff Name first.", "error");
+    return;
+  }
+
+  document.getElementById("reader").innerHTML = "";
+
+  const scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+    },
+
+    (decodedText) => {
+
+      if (decodedText !== COMPANY_QR_CODE) {
+        showMessage("Invalid company QR code.", "error");
+        return;
+      }
+
+      scanner.stop().then(() => {
+
+        document.getElementById("reader").innerHTML = "";
+
+        recordAttendance(staffId, staffName);
+
+      }).catch(() => {
+        recordAttendance(staffId, staffName);
+      });
+
+    },
+
+    (errorMessage) => {
+      // QR scanning continues automatically
+    }
+
+  ).catch((error) => {
+
+    showMessage(
+      "Unable to open the camera. Please allow camera permission.",
+      "error"
+    );
+
+  });
+}
+
+function recordAttendance(staffId, staffName) {
+
+  const records = getAttendance();
+  const today = getToday();
+  const currentTime = getTime();
+
+  let record = records.find(
+    r => r.staffId === staffId && r.date === today
+  );
+
+  if (!record) {
+
+    record = {
+      staffId: staffId,
+      name: staffName,
+      date: today,
+      arrival: currentTime,
+      closing: "",
+      punctuality: ""
+    };
+
+    // 8:00 AM is the expected arrival time
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+
+    if (hour < 8 || (hour === 8 && minute === 0)) {
+      record.punctuality = "Punctual";
+    } else {
+      record.punctuality = "Late";
+    }
+
+    records.push(record);
+
+    saveAttendance(records);
+
+    showMessage(
+      "Check-in successful! Arrival time: " + currentTime,
+      "success"
+    );
+
+  } else if (!record.closing) {
+
+    record.closing = currentTime;
+
+    saveAttendance(records);
+
+    showMessage(
+      "Check-out successful! Closing time: " + currentTime,
+      "success"
+    );
+
+  } else {
+
+    showMessage(
+      "This staff member has already checked in and checked out today.",
+      "error"
+    );
+
+  }
+
+  showReport();
+}
+
+function showReport() {
+
+  const records = getAttendance();
+  const today = getToday();
+
+  const todayRecords = records.filter(
+    r => r.date === today
+  );
+
+  const body = document.getElementById("reportBody");
+
+  body.innerHTML = "";
+
+  if (todayRecords.length === 0) {
+
+    body.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align:center;">
+          No attendance recorded today.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  todayRecords.forEach(record => {
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${record.staffId}</td>
+      <td>${record.name}</td>
+      <td>${record.date}</td>
+      <td>${record.arrival || "-"}</td>
+      <td>${record.closing || "-"}</td>
+      <td class="status">${record.punctuality || "-"}</td>
+    `;
+
+    body.appendChild(row);
+
+  });
+}
+
+function showCompanyQR() {
+
+  const qrContainer = document.getElementById("companyQR");
+
+  qrContainer.innerHTML = "";
+
+  new QRCode(qrContainer, {
+    text: COMPANY_QR_CODE,
+    width: 220,
+    height: 220
+  });
+
+}
+
+showReport();
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+</body>
+  </html>      margin: 20px auto;
       padding: 15px;
     }
 
