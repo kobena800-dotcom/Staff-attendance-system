@@ -1,29 +1,39 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Staff Attendance System</title>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
       background: #f4f6f8;
       color: #222;
     }
 
     header {
-      background: #123c69;
+      background: #0b5ed7;
       color: white;
       padding: 20px;
       text-align: center;
     }
 
+    header h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
     .container {
-      max-width: 1000px;
-      margin: 25px auto;
+      max-width: 1100px;
+      margin: 20px auto;
       padding: 15px;
     }
 
@@ -32,52 +42,76 @@
       padding: 20px;
       margin-bottom: 20px;
       border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     }
 
     h2 {
-      color: #123c69;
+      margin-bottom: 15px;
+      color: #0b5ed7;
     }
 
-    input, button {
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input, select {
       width: 100%;
       padding: 12px;
-      margin: 8px 0;
-      box-sizing: border-box;
-      border-radius: 6px;
       border: 1px solid #ccc;
-    }
-
-    button {
-      background: #123c69;
-      color: white;
-      border: none;
-      cursor: pointer;
+      border-radius: 7px;
       font-size: 16px;
     }
 
+    button {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 15px;
+      background: #0b5ed7;
+      color: white;
+    }
+
     button:hover {
-      background: #0b2d50;
+      opacity: 0.9;
+    }
+
+    .success {
+      background: #d1e7dd;
+      color: #0f5132;
+      padding: 12px;
+      border-radius: 7px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .table-container {
+      overflow-x: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
+      margin-top: 10px;
+      min-width: 700px;
     }
 
     th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
     }
 
     th {
-      background: #123c69;
+      background: #0b5ed7;
       color: white;
     }
 
-    .success {
+    .on-time {
       color: green;
       font-weight: bold;
     }
@@ -87,11 +121,29 @@
       font-weight: bold;
     }
 
-    .qr {
+    .qr-box {
       text-align: center;
       padding: 20px;
-      background: #eef3f8;
-      border-radius: 10px;
+    }
+
+    #qrcode {
+      display: inline-block;
+      margin: 15px;
+    }
+
+    .small {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .danger {
+      background: #dc3545;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #777;
     }
   </style>
 </head>
@@ -100,157 +152,425 @@
 
 <header>
   <h1>Staff Attendance System</h1>
-  <p>Daily Staff Attendance & Punctuality Report</p>
+  <p>Daily Staff Attendance & Performance Report</p>
 </header>
 
 <div class="container">
 
+  <!-- ATTENDANCE FORM -->
   <div class="card">
-    <h2>Staff Check-In</h2>
 
-    <input type="text" id="staffName" placeholder="Enter staff name">
+    <h2>Staff Attendance</h2>
 
-    <button onclick="checkIn()">
-      Scan QR / Check In
+    <label for="staffName">Staff Name</label>
+    <input
+      type="text"
+      id="staffName"
+      placeholder="Enter staff name"
+    >
+
+    <label for="staffId">Staff ID</label>
+    <input
+      type="text"
+      id="staffId"
+      placeholder="Enter staff ID"
+    >
+
+    <label for="action">Attendance Action</label>
+    <select id="action">
+      <option value="arrival">Arrival / Check In</option>
+      <option value="closing">Closing / Check Out</option>
+    </select>
+
+    <button onclick="recordAttendance()">
+      Record Attendance
     </button>
 
-    <p id="message"></p>
+    <div id="message" class="success"></div>
+
   </div>
 
+
+  <!-- COMPANY QR CODE -->
+  <div class="card qr-box">
+
+    <h2>Company Attendance QR Code</h2>
+
+    <p class="small">
+      All staff can scan this same QR code to open the attendance system.
+    </p>
+
+    <div id="qrcode"></div>
+
+    <p class="small">
+      Scan this QR code with a phone camera.
+    </p>
+
+  </div>
+
+
+  <!-- DAILY REPORT -->
   <div class="card">
-    <h2>Staff Check-Out</h2>
 
-    <input type="text" id="checkoutName" placeholder="Enter staff name">
+    <h2>Daily Staff Report</h2>
 
-    <button onclick="checkOut()">
-      Check Out
+    <button onclick="loadReport()">
+      Refresh Report
     </button>
 
-    <p id="checkoutMessage"></p>
-  </div>
+    <button class="danger" onclick="clearRecords()">
+      Clear Records
+    </button>
 
-  <div class="card">
-    <h2>Today's Attendance Report</h2>
+    <div class="table-container">
 
-    <table>
-      <thead>
-        <tr>
-          <th>Staff Name</th>
-          <th>Date</th>
-          <th>Arrival</th>
-          <th>Status</th>
-          <th>Closing</th>
-        </tr>
-      </thead>
+      <table>
 
-      <tbody id="attendanceTable">
-      </tbody>
-    </table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Staff Name</th>
+            <th>Staff ID</th>
+            <th>Arrival</th>
+            <th>Closing</th>
+            <th>Punctuality</th>
+          </tr>
+        </thead>
+
+        <tbody id="reportBody">
+        </tbody>
+
+      </table>
+
+    </div>
+
   </div>
 
 </div>
 
+<footer>
+  Staff Attendance System © 2026
+</footer>
+
+
+<!-- QR CODE LIBRARY -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+
 <script>
 
-let attendance = [];
+  /*
+   * COMPANY SETTINGS
+   */
 
-function checkIn() {
+  // Official working start time
+  const WORK_START_HOUR = 8;
+  const WORK_START_MINUTE = 0;
 
-  const name = document.getElementById("staffName").value.trim();
 
-  if (name === "") {
-    alert("Please enter the staff name.");
-    return;
+  /*
+   * RECORD ATTENDANCE
+   */
+
+  function recordAttendance() {
+
+    const name =
+      document.getElementById("staffName").value.trim();
+
+    const id =
+      document.getElementById("staffId").value.trim();
+
+    const action =
+      document.getElementById("action").value;
+
+
+    if (!name || !id) {
+
+      showMessage(
+        "Please enter the staff name and staff ID.",
+        false
+      );
+
+      return;
+    }
+
+
+    const now = new Date();
+
+    const date =
+      now.toLocaleDateString();
+
+    const time =
+      now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+
+    let records =
+      JSON.parse(
+        localStorage.getItem("attendanceRecords")
+      ) || [];
+
+
+    /*
+     * FIND TODAY'S RECORD
+     */
+
+    let existingRecord =
+      records.find(
+        record =>
+          record.staffId === id &&
+          record.date === date
+      );
+
+
+    /*
+     * CREATE NEW STAFF RECORD
+     */
+
+    if (!existingRecord) {
+
+      existingRecord = {
+
+        date: date,
+
+        staffName: name,
+
+        staffId: id,
+
+        arrival: "",
+
+        closing: "",
+
+        punctuality: ""
+
+      };
+
+      records.push(existingRecord);
+
+    }
+
+
+    /*
+     * ARRIVAL
+     */
+
+    if (action === "arrival") {
+
+      existingRecord.arrival = time;
+
+
+      const currentHour =
+        now.getHours();
+
+      const currentMinute =
+        now.getMinutes();
+
+
+      if (
+        currentHour < WORK_START_HOUR ||
+        (
+          currentHour === WORK_START_HOUR &&
+          currentMinute <= WORK_START_MINUTE
+        )
+      ) {
+
+        existingRecord.punctuality =
+          "On Time";
+
+      } else {
+
+        existingRecord.punctuality =
+          "Late";
+
+      }
+
+    }
+
+
+    /*
+     * CLOSING
+     */
+
+    if (action === "closing") {
+
+      existingRecord.closing = time;
+
+    }
+
+
+    /*
+     * SAVE DATA
+     */
+
+    localStorage.setItem(
+      "attendanceRecords",
+      JSON.stringify(records)
+    );
+
+
+    showMessage(
+      "Attendance recorded successfully at " + time,
+      true
+    );
+
+
+    loadReport();
+
   }
 
-  const now = new Date();
 
-  const date = now.toLocaleDateString();
-  const time = now.toLocaleTimeString();
+  /*
+   * SHOW MESSAGE
+   */
 
-  const hour = now.getHours();
+  function showMessage(text, success) {
 
-  let status;
+    const message =
+      document.getElementById("message");
 
-  if (hour < 8) {
-    status = "Punctual";
-  } else {
-    status = "Late";
+    message.innerText = text;
+
+    message.style.display = "block";
+
+    if (success) {
+
+      message.style.background = "#d1e7dd";
+
+      message.style.color = "#0f5132";
+
+    } else {
+
+      message.style.background = "#f8d7da";
+
+      message.style.color = "#842029";
+
+    }
+
   }
 
-  attendance.push({
-    name: name,
-    date: date,
-    arrival: time,
-    status: status,
-    closing: "-"
-  });
 
-  document.getElementById("message").innerHTML =
-    "Check-in successful for " + name;
+  /*
+   * LOAD DAILY REPORT
+   */
 
-  document.getElementById("staffName").value = "";
+  function loadReport() {
 
-  displayAttendance();
-}
+    const records =
+      JSON.parse(
+        localStorage.getItem("attendanceRecords")
+      ) || [];
 
 
-function checkOut() {
+    const body =
+      document.getElementById("reportBody");
 
-  const name = document.getElementById("checkoutName").value.trim();
+    body.innerHTML = "";
 
-  if (name === "") {
-    alert("Please enter the staff name.");
-    return;
+
+    records.forEach(record => {
+
+      const row =
+        document.createElement("tr");
+
+
+      const punctualityClass =
+        record.punctuality === "On Time"
+          ? "on-time"
+          : "late";
+
+
+      row.innerHTML = `
+
+        <td>${record.date}</td>
+
+        <td>${record.staffName}</td>
+
+        <td>${record.staffId}</td>
+
+        <td>${record.arrival || "-"}</td>
+
+        <td>${record.closing || "-"}</td>
+
+        <td class="${punctualityClass}">
+          ${record.punctuality || "-"}
+        </td>
+
+      `;
+
+
+      body.appendChild(row);
+
+    });
+
   }
 
-  const now = new Date();
-  const time = now.toLocaleTimeString();
 
-  const staff = attendance.find(
-    person => person.name.toLowerCase() === name.toLowerCase()
-  );
+  /*
+   * CLEAR ALL RECORDS
+   */
 
-  if (!staff) {
-    alert("Staff member was not found.");
-    return;
+  function clearRecords() {
+
+    const confirmation =
+      confirm(
+        "Are you sure you want to delete all attendance records?"
+      );
+
+
+    if (confirmation) {
+
+      localStorage.removeItem(
+        "attendanceRecords"
+      );
+
+      loadReport();
+
+      alert("All records have been cleared.");
+
+    }
+
   }
 
-  staff.closing = time;
 
-  document.getElementById("checkoutMessage").innerHTML =
-    "Check-out successful for " + name;
+  /*
+   * CREATE COMPANY QR CODE
+   */
 
-  document.getElementById("checkoutName").value = "";
+  function createQRCode() {
 
-  displayAttendance();
-}
+    const qrContainer =
+      document.getElementById("qrcode");
 
 
-function displayAttendance() {
+    qrContainer.innerHTML = "";
 
-  const table = document.getElementById("attendanceTable");
 
-  table.innerHTML = "";
+    new QRCode(qrContainer, {
 
-  attendance.forEach(person => {
+      text: window.location.href,
 
-    const row = document.createElement("tr");
+      width: 200,
 
-    row.innerHTML = `
-      <td>${person.name}</td>
-      <td>${person.date}</td>
-      <td>${person.arrival}</td>
-      <td class="${person.status === "Late" ? "late" : "success"}">
-        ${person.status}
-      </td>
-      <td>${person.closing}</td>
-    `;
+      height: 200
 
-    table.appendChild(row);
+    });
 
-  });
-}
+  }
+
+
+  /*
+   * START SYSTEM
+   */
+
+  window.onload = function() {
+
+    loadReport();
+
+    createQRCode();
+
+  };
 
 </script>
 
