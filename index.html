@@ -3,17 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Staff Attendance System</title>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <style>
-*{
-    box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
     margin:0;
-    font-family:Arial,sans-serif;
+    font-family:Arial,Helvetica,sans-serif;
     background:#f2f5f9;
     color:#222;
 }
@@ -31,35 +30,30 @@ header h1{
 }
 
 header p{
-    margin:7px 0 0;
-}
-
-#clock{
-    margin-top:8px;
-    font-weight:bold;
+    margin:6px 0 0;
+    font-size:14px;
 }
 
 .container{
     max-width:1100px;
     margin:auto;
-    padding:20px;
+    padding:15px;
 }
 
 .card{
     background:white;
     padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin:15px 0;
+    border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
 }
 
-input,select,button{
+input,select,button,textarea{
     width:100%;
     padding:12px;
-    margin-top:8px;
-    margin-bottom:12px;
-    border-radius:6px;
+    margin:7px 0;
     border:1px solid #ccc;
+    border-radius:7px;
     font-size:15px;
 }
 
@@ -74,83 +68,60 @@ button:hover{
     opacity:.9;
 }
 
-.danger{
-    background:#c62828;
-}
+.danger{background:#c62828}
+.success{background:#2e7d32}
+.warning{background:#ef6c00}
+.secondary{background:#555}
 
-.success{
-    background:#168a45;
-}
-
-.nav{
+.tabs{
     display:flex;
     flex-wrap:wrap;
-    gap:8px;
-    margin-bottom:20px;
+    gap:6px;
+    margin:15px 0;
 }
 
-.nav button{
+.tabs button{
     width:auto;
-    margin:0;
-    padding:10px 15px;
+    padding:10px 14px;
 }
 
-.hidden{
+.section{
     display:none;
 }
 
-.login-box{
-    max-width:420px;
-    margin:50px auto;
-}
-
-.message{
-    padding:12px;
-    border-radius:6px;
-    margin-bottom:15px;
-    display:none;
-}
-
-.success-message{
-    background:#d8f5df;
-    color:#176b2f;
-}
-
-.error-message{
-    background:#ffdede;
-    color:#9b1c1c;
+.section.active{
+    display:block;
 }
 
 .stats{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:15px;
+    gap:12px;
 }
 
 .stat{
-    background:#123c69;
-    color:white;
-    padding:20px;
+    padding:18px;
     border-radius:10px;
+    background:#eaf1f8;
     text-align:center;
 }
 
 .stat h2{
-    margin:0;
-    font-size:30px;
+    margin:5px 0;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:15px;
-    overflow-x:auto;
+    margin-top:10px;
+    background:white;
 }
 
 th,td{
     border:1px solid #ddd;
-    padding:10px;
+    padding:9px;
     text-align:left;
+    font-size:14px;
 }
 
 th{
@@ -158,16 +129,56 @@ th{
     color:white;
 }
 
-.small-note{
+.scroll{
+    overflow-x:auto;
+}
+
+.login-box{
+    max-width:450px;
+    margin:50px auto;
+}
+
+.hidden{
+    display:none!important;
+}
+
+.qr-box{
+    text-align:center;
+    padding:15px;
+    border:1px dashed #aaa;
+    margin:10px 0;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:12px;
+    font-size:12px;
+}
+
+.present{background:#c8e6c9;color:#1b5e20}
+.late{background:#ffe0b2;color:#e65100}
+.absent{background:#ffcdd2;color:#b71c1c}
+.pending{background:#fff3cd;color:#856404}
+.approved{background:#c8e6c9;color:#1b5e20}
+.rejected{background:#ffcdd2;color:#b71c1c}
+
+.message{
+    padding:10px;
+    border-radius:7px;
+    margin:8px 0;
+    background:#e3f2fd;
+}
+
+.small{
     font-size:13px;
     color:#666;
 }
 
-.profile{
-    background:#eef5ff;
-    padding:15px;
-    border-radius:8px;
-    margin-bottom:15px;
+@media(max-width:600px){
+    header h1{font-size:20px}
+    .tabs button{flex:1 1 45%}
+    th,td{font-size:12px}
 }
 </style>
 </head>
@@ -177,383 +188,533 @@ th{
 <header>
     <h1>Staff Attendance System</h1>
     <p>Professional Attendance Tracking & Management</p>
-    <div id="clock"></div>
-</header>
-
-
-<!-- LOGIN PAGE -->
-<div id="loginPage" class="container">
-
-    <div class="card login-box">
-
-        <h2>System Login</h2>
-
-        <div id="loginMessage" class="message"></div>
-
-        <label>Username</label>
-        <input type="text" id="loginUsername" placeholder="Enter username">
-
-        <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="Enter password">
-
-        <label>Login As</label>
-        <select id="loginRole">
-            <option value="admin">Admin</option>
-            <option value="staff">Staff</option>
-        </select>
-
-        <button onclick="login()">Login</button>
-
-        <p class="small-note">
-            Default admin account: admin / admin123
-        </p>
-
-    </div>
-
-</div>
-
-
-<!-- SYSTEM PAGE -->
-<div id="systemPage" class="hidden">
-
-<header>
-    <div id="welcomeText"></div>
 </header>
 
 <div class="container">
 
-    <!-- NAVIGATION -->
-    <div class="nav">
+<!-- LOGIN -->
+<div id="loginPage" class="login-box card">
 
-        <button id="dashboardButton" onclick="showSection('dashboard')">
-            Dashboard
-        </button>
+    <h2>🔐 System Login</h2>
 
-        <button id="staffButton" onclick="showSection('staffSection')">
-            Staff Management
-        </button>
+    <select id="loginType">
+        <option value="admin">Admin Login</option>
+        <option value="staff">Staff Login</option>
+    </select>
 
-        <button id="attendanceButton" onclick="showSection('attendanceSection')">
-            Attendance
-        </button>
+    <input id="loginUsername" placeholder="Username / Staff ID">
 
-        <button id="reportsButton" onclick="showSection('reportsSection')">
-            Reports
-        </button>
+    <input id="loginPassword" type="password" placeholder="Password">
 
-        <button id="myAttendanceButton" onclick="showSection('myAttendanceSection')">
-            My Attendance
-        </button>
+    <button onclick="login()">Login</button>
 
-        <button id="settingsButton" onclick="showSection('settingsSection')">
-            Admin Settings
-        </button>
+    <div id="loginMessage"></div>
 
-        <button onclick="logout()">
-            Logout
-        </button>
+    <p class="small">
+        Default Admin Username: <b>admin</b><br>
+        Default Admin Password: <b>admin123</b>
+    </p>
+</div>
+
+<!-- APPLICATION -->
+<div id="app" class="hidden">
+
+    <div class="card">
+        <b id="welcomeText"></b>
+        <button class="danger" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- ADMIN TABS -->
+    <div id="adminArea">
+
+        <div class="tabs">
+            <button onclick="showSection('dashboard')">📊 Dashboard</button>
+            <button onclick="showSection('checkin')">🟢 Check-In</button>
+            <button onclick="showSection('checkout')">🔴 Check-Out</button>
+            <button onclick="showSection('reports')">📋 Reports</button>
+            <button onclick="showSection('history')">📅 History</button>
+            <button onclick="showSection('staff')">👥 Staff</button>
+            <button onclick="showSection('qr')">📱 Staff QR</button>
+            <button onclick="showSection('leaveAdmin')">📝 Leave</button>
+            <button onclick="showSection('settings')">⚙️ Settings</button>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="section active">
+
+            <div class="card">
+                <h2>Admin Dashboard</h2>
+
+                <div class="stats">
+
+                    <div class="stat">
+                        <h2 id="totalStaff">0</h2>
+                        <p>Total Staff</p>
+                    </div>
+
+                    <div class="stat">
+                        <h2 id="presentToday">0</h2>
+                        <p>Present Today</p>
+                    </div>
+
+                    <div class="stat">
+                        <h2 id="lateToday">0</h2>
+                        <p>Late Today</p>
+                    </div>
+
+                    <div class="stat">
+                        <h2 id="checkedOutToday">0</h2>
+                        <p>Checked Out</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Today's Attendance</h3>
+                <div class="scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Staff</th>
+                                <th>ID</th>
+                                <th>Check-In</th>
+                                <th>Status</th>
+                                <th>Check-Out</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CHECK IN -->
+        <div id="checkin" class="section">
+
+            <div class="card">
+                <h2>🟢 Staff Check-In</h2>
+
+                <select id="checkinStaff"></select>
+
+                <button class="success" onclick="checkIn()">
+                    Record Check-In
+                </button>
+
+                <div id="checkinMessage"></div>
+            </div>
+
+        </div>
+
+        <!-- CHECK OUT -->
+        <div id="checkout" class="section">
+
+            <div class="card">
+                <h2>🔴 Staff Check-Out</h2>
+
+                <select id="checkoutStaff"></select>
+
+                <button class="danger" onclick="checkOut()">
+                    Record Check-Out
+                </button>
+
+                <div id="checkoutMessage"></div>
+            </div>
+
+        </div>
+
+        <!-- REPORTS -->
+        <div id="reports" class="section">
+
+            <div class="card">
+
+                <h2>📋 Attendance Reports</h2>
+
+                <input type="date" id="reportDate">
+
+                <button onclick="generateReport()">Generate Report</button>
+
+                <button class="success" onclick="exportCSV()">
+                    📥 Export CSV
+                </button>
+
+                <div class="scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Staff</th>
+                                <th>ID</th>
+                                <th>Department</th>
+                                <th>Check-In</th>
+                                <th>Status</th>
+                                <th>Check-Out</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTable"></tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- HISTORY -->
+        <div id="history" class="section">
+
+            <div class="card">
+
+                <h2>📅 Attendance History</h2>
+
+                <input type="date" id="historyFrom">
+                <input type="date" id="historyTo">
+
+                <button onclick="loadHistory()">Search History</button>
+
+                <div class="scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Staff</th>
+                                <th>ID</th>
+                                <th>Check-In</th>
+                                <th>Status</th>
+                                <th>Check-Out</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable"></tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- STAFF MANAGEMENT -->
+        <div id="staff" class="section">
+
+            <div class="card">
+
+                <h2>👥 Staff Management</h2>
+
+                <input id="staffName" placeholder="Full Name">
+
+                <input id="staffId" placeholder="Staff ID">
+
+                <input id="staffDepartment" placeholder="Department">
+
+                <input id="staffEmail" type="email" placeholder="Email">
+
+                <input id="staffExpected" type="time" value="09:00">
+
+                <input id="staffPassword" type="password" placeholder="Staff Password">
+
+                <button class="success" onclick="addStaff()">
+                    Add Staff
+                </button>
+
+                <div id="staffMessage"></div>
+
+            </div>
+
+            <div class="card">
+
+                <h3>Registered Staff</h3>
+
+                <div class="scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>ID</th>
+                                <th>Department</th>
+                                <th>Expected</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="staffTable"></tbody>
+
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- QR -->
+        <div id="qr" class="section">
+
+            <div class="card">
+
+                <h2>📱 Staff QR Codes</h2>
+
+                <p>
+                    Each staff member has a unique QR code based on their Staff ID.
+                </p>
+
+                <div id="qrContainer"></div>
+
+            </div>
+
+        </div>
+
+        <!-- LEAVE ADMIN -->
+        <div id="leaveAdmin" class="section">
+
+            <div class="card">
+
+                <h2>📝 Leave / Permission Requests</h2>
+
+                <div class="scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Staff</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="leaveTable"></tbody>
+
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="settings" class="section">
+
+            <div class="card">
+
+                <h2>⚙️ Admin Settings</h2>
+
+                <input id="newAdminUsername"
+                       placeholder="New Admin Username">
+
+                <input id="newAdminPassword"
+                       type="password"
+                       placeholder="New Admin Password">
+
+                <button onclick="changeAdminLogin()">
+                    Save Admin Login
+                </button>
+
+                <div id="settingsMessage"></div>
+
+            </div>
+
+            <div class="card">
+
+                <h3>System Settings</h3>
+
+                <p>
+                    Expected working time:
+                    <b>9:00 AM</b>
+                </p>
+
+                <p>
+                    Late threshold:
+                    <b>15 minutes</b>
+                </p>
+
+                <button class="danger" onclick="clearAllData()">
+                    ⚠️ Clear All Attendance Data
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
 
-    <!-- DASHBOARD -->
-    <section id="dashboard">
+    <!-- STAFF AREA -->
 
-        <div class="card">
-            <h2>Admin Dashboard</h2>
+    <div id="staffArea" class="hidden">
 
-            <div class="stats">
+        <div class="tabs">
+            <button onclick="showStaffSection('staffDashboard')">
+                🏠 My Dashboard
+            </button>
 
-                <div class="stat">
-                    <h2 id="totalStaff">0</h2>
-                    <p>Total Staff</p>
-                </div>
+            <button onclick="showStaffSection('staffAttendance')">
+                📅 My Attendance
+            </button>
 
-                <div class="stat">
-                    <h2 id="presentToday">0</h2>
-                    <p>Present Today</p>
-                </div>
+            <button onclick="showStaffSection('staffLeave')">
+                📝 Request Leave
+            </button>
+        </div>
 
-                <div class="stat">
-                    <h2 id="checkedOutToday">0</h2>
-                    <p>Checked Out Today</p>
-                </div>
+        <!-- STAFF DASHBOARD -->
+        <div id="staffDashboard" class="section active">
 
-                <div class="stat">
-                    <h2 id="totalRecords">0</h2>
-                    <p>Total Records</p>
+            <div class="card">
+
+                <h2>👤 My Dashboard</h2>
+
+                <div class="stats">
+
+                    <div class="stat">
+                        <h2 id="myPresent">0</h2>
+                        <p>Days Present</p>
+                    </div>
+
+                    <div class="stat">
+                        <h2 id="myLate">0</h2>
+                        <p>Late Days</p>
+                    </div>
+
+                    <div class="stat">
+                        <h2 id="myCheckedOut">0</h2>
+                        <p>Checked Out</p>
+                    </div>
+
                 </div>
 
             </div>
-        </div>
 
-    </section>
+            <div class="card">
 
+                <h3>Today's Attendance</h3>
 
-    <!-- STAFF MANAGEMENT -->
-    <section id="staffSection" class="hidden">
+                <div id="myToday"></div>
 
-        <div class="card">
-
-            <h2>Register Staff</h2>
-
-            <input type="text" id="staffName" placeholder="Staff full name">
-
-            <input type="text" id="staffId" placeholder="Staff ID">
-
-            <input type="text" id="staffDepartment" placeholder="Department">
-
-            <input type="text" id="staffUsername" placeholder="Staff username">
-
-            <input type="password" id="staffPassword" placeholder="Staff password">
-
-            <button onclick="addStaff()">
-                Register Staff
-            </button>
+            </div>
 
         </div>
 
+        <!-- STAFF ATTENDANCE -->
+        <div id="staffAttendance" class="section">
 
-        <div class="card">
+            <div class="card">
 
-            <h2>Registered Staff</h2>
+                <h2>📅 My Attendance History</h2>
 
-            <div id="staffTable"></div>
+                <div class="scroll">
 
-        </div>
+                    <table>
 
-    </section>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Check-In</th>
+                                <th>Status</th>
+                                <th>Check-Out</th>
+                            </tr>
+                        </thead>
 
+                        <tbody id="myAttendanceTable"></tbody>
 
-    <!-- ATTENDANCE -->
-    <section id="attendanceSection" class="hidden">
+                    </table>
 
-        <div class="card">
+                </div>
 
-            <h2>Staff Check-In</h2>
-
-            <input type="text" id="checkInId" placeholder="Enter Staff ID">
-
-            <button onclick="checkIn()">
-                Check In
-            </button>
-
-            <div id="checkInMessage" class="message"></div>
-
-        </div>
-
-
-        <div class="card">
-
-            <h2>Staff Check-Out</h2>
-
-            <input type="text" id="checkOutId" placeholder="Enter Staff ID">
-
-            <button onclick="checkOut()">
-                Check Out
-            </button>
-
-            <div id="checkOutMessage" class="message"></div>
+            </div>
 
         </div>
 
-    </section>
+        <!-- STAFF LEAVE -->
+        <div id="staffLeave" class="section">
 
+            <div class="card">
 
-    <!-- REPORTS -->
-    <section id="reportsSection" class="hidden">
+                <h2>📝 Request Leave / Permission</h2>
 
-        <div class="card">
+                <select id="leaveType">
+                    <option>Annual Leave</option>
+                    <option>Sick Leave</option>
+                    <option>Permission</option>
+                    <option>Emergency Leave</option>
+                </select>
 
-            <h2>Daily Report</h2>
+                <input type="date" id="leaveDate">
 
-            <input type="date" id="reportDate">
+                <textarea id="leaveReason"
+                          placeholder="Explain your reason"></textarea>
 
-            <button onclick="generateDailyReport()">
-                Generate Daily Report
-            </button>
+                <button onclick="requestLeave()">
+                    Submit Request
+                </button>
 
-            <div id="dailyReport"></div>
+                <div id="leaveMessage"></div>
 
-        </div>
+            </div>
 
+            <div class="card">
 
-        <div class="card">
+                <h3>My Requests</h3>
 
-            <h2>Monthly Report</h2>
+                <div class="scroll">
 
-            <input type="month" id="reportMonth">
+                    <table>
 
-            <button onclick="generateMonthlyReport()">
-                Generate Monthly Report
-            </button>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
 
-            <div id="monthlyReport"></div>
+                        <tbody id="myLeaveTable"></tbody>
 
-        </div>
+                    </table>
 
+                </div>
 
-        <div class="card">
-
-            <button onclick="exportCSV()">
-                Export Attendance CSV
-            </button>
-        </div>
-
-    </section>
-
-
-    <!-- MY ATTENDANCE -->
-    <section id="myAttendanceSection" class="hidden">
-
-        <div class="card">
-
-            <h2>My Attendance</h2>
-
-            <div id="staffProfile"></div>
-
-            <div id="myAttendanceTable"></div>
+            </div>
 
         </div>
 
-    </section>
-
-
-    <!-- ADMIN SETTINGS -->
-    <section id="settingsSection" class="hidden">
-
-        <div class="card">
-
-            <h2>Admin Settings</h2>
-
-            <p>
-                Change your administrator username and password here.
-            </p>
-
-            <div id="settingsMessage" class="message"></div>
-
-
-            <h3>Change Username</h3>
-
-            <label>Current Username</label>
-            <input
-                type="text"
-                id="currentAdminUsername"
-                readonly
-            >
-
-            <label>New Username</label>
-            <input
-                type="text"
-                id="newAdminUsername"
-                placeholder="Enter new username"
-            >
-
-            <button onclick="changeAdminUsername()">
-                Change Username
-            </button>
-
-
-            <hr>
-
-
-            <h3>Change Password</h3>
-
-            <label>Current Password</label>
-            <input
-                type="password"
-                id="currentAdminPassword"
-                placeholder="Enter current password"
-            >
-
-            <label>New Password</label>
-            <input
-                type="password"
-                id="newAdminPassword"
-                placeholder="Enter new password"
-            >
-
-            <label>Confirm New Password</label>
-            <input
-                type="password"
-                id="confirmAdminPassword"
-                placeholder="Confirm new password"
-            >
-
-            <button onclick="changeAdminPassword()">
-                Change Password
-            </button>
-
-        </div>
-
-
-        <div class="card">
-
-            <h3>Security Information</h3>
-
-            <p>
-                Keep your administrator username and password private.
-            </p>
-
-            <p class="small-note">
-                This current version stores login information in your
-                browser for testing. It should not be considered
-                production-level security.
-            </p>
-
-        </div>
-
-    </section>
+    </div>
 
 </div>
+
 </div>
 
 
 <script>
 
-/* ================================
-   DATA
-================================ */
+/* ==============================
+   DATABASE
+============================== */
 
-let staffList =
-    JSON.parse(localStorage.getItem("staffList")) || [];
+let staff = JSON.parse(localStorage.getItem("staff")) || [];
 
 let attendance =
     JSON.parse(localStorage.getItem("attendance")) || [];
 
-let users =
-    JSON.parse(localStorage.getItem("users")) || [];
+let leaves =
+    JSON.parse(localStorage.getItem("leaves")) || [];
+
+let admin =
+    JSON.parse(localStorage.getItem("admin")) || {
+        username:"admin",
+        password:"admin123"
+    };
 
 let currentUser = null;
+let currentType = null;
 
 
-/* ================================
-   DEFAULT ADMIN
-================================ */
-
-if(users.length === 0){
-
-    users.push({
-        username:"admin",
-        password:"admin123",
-        role:"admin",
-        staffId:""
-    });
-
-    saveData();
-}
-
-
-/* ================================
-   SAVE DATA
-================================ */
+/* ==============================
+   SAVE DATABASE
+============================== */
 
 function saveData(){
 
-    localStorage.setItem(
-        "staffList",
-        JSON.stringify(staffList)
-    );
+    localStorage.setItem("staff",JSON.stringify(staff));
 
     localStorage.setItem(
         "attendance",
@@ -561,403 +722,446 @@ function saveData(){
     );
 
     localStorage.setItem(
-        "users",
-        JSON.stringify(users)
+        "leaves",
+        JSON.stringify(leaves)
+    );
+
+    localStorage.setItem(
+        "admin",
+        JSON.stringify(admin)
     );
 }
 
 
-/* ================================
-   GHANA DATE & TIME
-================================ */
-
-function getDate(){
-
-    return new Intl.DateTimeFormat(
-        "en-CA",
-        {
-            timeZone:"Africa/Accra",
-            year:"numeric",
-            month:"2-digit",
-            day:"2-digit"
-        }
-    ).format(new Date());
-
-}
-
-
-function getTime(){
-
-    return new Intl.DateTimeFormat(
-        "en-GB",
-        {
-            timeZone:"Africa/Accra",
-            hour:"2-digit",
-            minute:"2-digit",
-            second:"2-digit"
-        }
-    ).format(new Date());
-
-}
-
-
-/* ================================
-   CLOCK
-================================ */
-
-function updateClock(){
-
-    const now =
-        new Intl.DateTimeFormat(
-            "en-GH",
-            {
-                timeZone:"Africa/Accra",
-                dateStyle:"full",
-                timeStyle:"medium"
-            }
-        ).format(new Date());
-
-    document.getElementById("clock").textContent = now;
-}
-
-setInterval(updateClock,1000);
-updateClock();
-
-
-/* ================================
+/* ==============================
    LOGIN
-================================ */
+============================== */
 
 function login(){
 
+    const type =
+        document.getElementById("loginType").value;
+
     const username =
-        document.getElementById("loginUsername")
-        .value.trim();
+        document.getElementById("loginUsername").value.trim();
 
     const password =
-        document.getElementById("loginPassword")
-        .value;
+        document.getElementById("loginPassword").value;
 
-    const role =
-        document.getElementById("loginRole")
-        .value;
+    const message =
+        document.getElementById("loginMessage");
 
 
-    const user = users.find(function(u){
+    if(type === "admin"){
 
-        return (
-            u.username === username &&
-            u.password === password &&
-            u.role === role
-        );
+        if(
+            username === admin.username &&
+            password === admin.password
+        ){
 
-    });
+            currentUser = admin.username;
+            currentType = "admin";
 
+            document.getElementById("loginPage")
+                .classList.add("hidden");
 
-    if(!user){
+            document.getElementById("app")
+                .classList.remove("hidden");
 
-        showMessage(
-            "loginMessage",
-            "Incorrect username, password or role.",
-            false
-        );
+            document.getElementById("adminArea")
+                .classList.remove("hidden");
 
-        return;
-    }
+            document.getElementById("staffArea")
+                .classList.add("hidden");
 
+            document.getElementById("welcomeText")
+                .textContent =
+                "Welcome, Administrator";
 
-    currentUser = user;
+            loadEverything();
 
+        }else{
 
-    document.getElementById("loginPage")
-        .classList.add("hidden");
+            message.innerHTML =
+            '<div class="message">❌ Incorrect admin username or password.</div>';
 
-    document.getElementById("systemPage")
-        .classList.remove("hidden");
-
-
-    document.getElementById("welcomeText")
-        .textContent =
-        "Logged in as: " +
-        currentUser.username;
-
-
-    configureInterface();
-
-}
-
-
-/* ================================
-   INTERFACE
-================================ */
-
-function configureInterface(){
-
-    const isAdmin =
-        currentUser.role === "admin";
-
-
-    document.getElementById("dashboardButton")
-        .classList.toggle("hidden",!isAdmin);
-
-    document.getElementById("staffButton")
-        .classList.toggle("hidden",!isAdmin);
-
-    document.getElementById("attendanceButton")
-        .classList.toggle("hidden",!isAdmin);
-
-    document.getElementById("reportsButton")
-        .classList.toggle("hidden",!isAdmin);
-
-    document.getElementById("settingsButton")
-        .classList.toggle("hidden",!isAdmin);
-
-    document.getElementById("myAttendanceButton")
-        .classList.toggle("hidden",isAdmin);
-
-
-    if(isAdmin){
-
-        showSection("dashboard");
-        updateDashboard();
-        renderStaff();
-
-        document.getElementById(
-            "currentAdminUsername"
-        ).value = currentUser.username;
+        }
 
     }else{
 
-        showSection("myAttendance");
-        displayMyAttendance();
+        const user = staff.find(s =>
+            s.id === username &&
+            s.password === password
+        );
+
+        if(user){
+
+            currentUser = user;
+            currentType = "staff";
+
+            document.getElementById("loginPage")
+                .classList.add("hidden");
+
+            document.getElementById("app")
+                .classList.remove("hidden");
+
+            document.getElementById("adminArea")
+                .classList.add("hidden");
+
+            document.getElementById("staffArea")
+                .classList.remove("hidden");
+
+            document.getElementById("welcomeText")
+                .textContent =
+                "Welcome, " + user.name;
+
+            loadStaffDashboard();
+
+        }else{
+
+            message.innerHTML =
+            '<div class="message">❌ Incorrect Staff ID or password.</div>';
+
+        }
 
     }
 
 }
 
 
-/* ================================
-   SHOW SECTION
-================================ */
+/* ==============================
+   LOGOUT
+============================== */
 
-function showSection(section){
+function logout(){
 
-    const sections = [
+    currentUser = null;
+    currentType = null;
 
-        "dashboard",
-        "staffSection",
-        "attendanceSection",
-        "reportsSection",
-        "myAttendanceSection",
-        "settingsSection"
+    document.getElementById("app")
+        .classList.add("hidden");
 
-    ];
-
-
-    sections.forEach(function(id){
-
-        document.getElementById(id)
-            .classList.add("hidden");
-
-    });
-
-
-    if(section === "myAttendance"){
-
-        document.getElementById("myAttendanceSection")
-            .classList.remove("hidden");
-
-        displayMyAttendance();
-
-        return;
-    }
-
-
-    document.getElementById(section)
+    document.getElementById("loginPage")
         .classList.remove("hidden");
 
-
-    if(section === "dashboard"){
-        updateDashboard();
-    }
-
-    if(section === "staffSection"){
-        renderStaff();
-    }
-
-    if(section === "settingsSection"){
-
-        document.getElementById(
-            "currentAdminUsername"
-        ).value = currentUser.username;
-
-    }
+    document.getElementById("loginUsername").value="";
+    document.getElementById("loginPassword").value="";
 
 }
 
 
-/* ================================
-   REGISTER STAFF
-================================ */
+/* ==============================
+   NAVIGATION
+============================== */
 
-function addStaff(){
+function showSection(id){
 
-    if(currentUser.role !== "admin"){
-        return;
-    }
+    document
+        .querySelectorAll("#adminArea .section")
+        .forEach(s => s.classList.remove("active"));
+
+    document
+        .getElementById(id)
+        .classList.add("active");
+
+    if(id==="dashboard") updateDashboard();
+    if(id==="staff") loadStaffTable();
+    if(id==="qr") generateAllQR();
+    if(id==="leaveAdmin") loadLeaveAdmin();
+
+}
+
+function showStaffSection(id){
+
+    document
+        .querySelectorAll("#staffArea .section")
+        .forEach(s => s.classList.remove("active"));
+
+    document
+        .getElementById(id)
+        .classList.add("active");
+
+    if(id==="staffDashboard")
+        loadStaffDashboard();
+
+    if(id==="staffAttendance")
+        loadMyAttendance();
+
+    if(id==="staffLeave")
+        loadMyLeaves();
+
+}
 
 
-    const name =
-        document.getElementById("staffName")
-        .value.trim();
+/* ==============================
+   DATE / TIME
+============================== */
+
+function today(){
+
+    return new Date()
+        .toISOString()
+        .split("T")[0];
+
+}
+
+function currentTime(){
+
+    return new Date()
+        .toLocaleTimeString([],{
+            hour:"2-digit",
+            minute:"2-digit"
+        });
+
+}
+
+
+/* ==============================
+   CHECK IN
+============================== */
+
+function checkIn(){
 
     const id =
-        document.getElementById("staffId")
-        .value.trim();
+        document.getElementById("checkinStaff").value;
 
-    const department =
-        document.getElementById("staffDepartment")
-        .value.trim();
+    const user =
+        staff.find(s => s.id === id);
 
-    const username =
-        document.getElementById("staffUsername")
-        .value.trim();
+    if(!user){
+        showMessage("checkinMessage","Select a staff member.");
+        return;
+    }
 
-    const password =
-        document.getElementById("staffPassword")
-        .value;
+    const date = today();
 
+    const existing =
+        attendance.find(a =>
+            a.staffId === id &&
+            a.date === date
+        );
 
-    if(
-        !name ||
-        !id ||
-        !department ||
-        !username ||
-        !password
-    ){
+    if(existing){
 
-        alert("Please fill in all staff fields.");
+        showMessage(
+            "checkinMessage",
+            "⚠️ This staff member has already checked in today."
+        );
 
         return;
     }
 
+    const time = currentTime();
 
-    if(
-        staffList.some(function(staff){
-            return staff.id === id;
-        })
-    ){
+    const late =
+        isLate(time,user.expected || "09:00");
 
-        alert("This Staff ID already exists.");
+    attendance.push({
 
-        return;
-    }
-
-
-    if(
-        users.some(function(user){
-            return user.username === username;
-        })
-    ){
-
-        alert("This username already exists.");
-
-        return;
-    }
-
-
-    staffList.push({
-
-        name:name,
-        id:id,
-        department:department,
-        username:username
+        date:date,
+        staffId:user.id,
+        name:user.name,
+        department:user.department,
+        checkIn:time,
+        status:late ? "Late" : "Present",
+        checkOut:""
 
     });
-
-
-    users.push({
-
-        username:username,
-        password:password,
-        role:"staff",
-        staffId:id
-
-    });
-
 
     saveData();
 
-
-    document.getElementById("staffName").value="";
-    document.getElementById("staffId").value="";
-    document.getElementById("staffDepartment").value="";
-    document.getElementById("staffUsername").value="";
-    document.getElementById("staffPassword").value="";
-
-
-    alert("Staff registered successfully.");
-
-    renderStaff();
+    showMessage(
+        "checkinMessage",
+        "✅ " + user.name +
+        " checked in at " + time +
+        (late ? " — LATE" : " — ON TIME")
+    );
 
     updateDashboard();
 
 }
 
 
-/* ================================
-   DISPLAY STAFF
-================================ */
+/* ==============================
+   CHECK OUT
+============================== */
 
-function renderStaff(){
+function checkOut(){
 
-    const box =
-        document.getElementById("staffTable");
+    const id =
+        document.getElementById("checkoutStaff").value;
+
+    const record =
+        attendance.find(a =>
+            a.staffId === id &&
+            a.date === today()
+        );
+
+    if(!record){
+
+        showMessage(
+            "checkoutMessage",
+            "❌ No check-in record found for today."
+        );
+
+        return;
+    }
+
+    if(record.checkOut){
+
+        showMessage(
+            "checkoutMessage",
+            "⚠️ This staff member has already checked out."
+        );
+
+        return;
+    }
+
+    record.checkOut = currentTime();
+
+    saveData();
+
+    showMessage(
+        "checkoutMessage",
+        "✅ Check-out recorded at " + record.checkOut
+    );
+
+    updateDashboard();
+
+}
 
 
-    if(staffList.length === 0){
+/* ==============================
+   LATE CHECK
+============================== */
 
-        box.innerHTML =
-            "<p>No staff registered yet.</p>";
+function isLate(actual,expected){
+
+    const a =
+        actual.split(":").map(Number);
+
+    const e =
+        expected.split(":").map(Number);
+
+    const actualMinutes =
+        a[0]*60+a[1];
+
+    const expectedMinutes =
+        e[0]*60+e[1];
+
+    return actualMinutes > expectedMinutes + 15;
+
+}
+
+
+/* ==============================
+   ADD STAFF
+============================== */
+
+function addStaff(){
+
+    const name =
+        document.getElementById("staffName").value.trim();
+
+    const id =
+        document.getElementById("staffId").value.trim();
+
+    const department =
+        document.getElementById("staffDepartment").value.trim();
+
+    const email =
+        document.getElementById("staffEmail").value.trim();
+
+    const expected =
+        document.getElementById("staffExpected").value;
+
+    const password =
+        document.getElementById("staffPassword").value;
+
+
+    if(!name || !id || !password){
+
+        showMessage(
+            "staffMessage",
+            "❌ Name, Staff ID and password are required."
+        );
+
+        return;
+    }
+
+    if(staff.some(s => s.id === id)){
+
+        showMessage(
+            "staffMessage",
+            "❌ This Staff ID already exists."
+        );
 
         return;
     }
 
 
-    let html = `
+    staff.push({
 
-    <table>
+        name:name,
+        id:id,
+        department:department,
+        email:email,
+        expected:expected || "09:00",
+        password:password
 
-    <tr>
-        <th>Name</th>
-        <th>ID</th>
-        <th>Department</th>
-        <th>Username</th>
-        <th>Action</th>
-    </tr>
-    `;
+    });
+
+    saveData();
+
+    document.getElementById("staffName").value="";
+    document.getElementById("staffId").value="";
+    document.getElementById("staffDepartment").value="";
+    document.getElementById("staffEmail").value="";
+    document.getElementById("staffPassword").value="";
+
+    showMessage(
+        "staffMessage",
+        "✅ Staff account created successfully."
+    );
+
+    loadEverything();
+
+}
 
 
-    staffList.forEach(function(staff){
+/* ==============================
+   STAFF TABLE
+============================== */
 
-        html += `
+function loadStaffTable(){
+
+    const table =
+        document.getElementById("staffTable");
+
+    table.innerHTML="";
+
+    staff.forEach((s,index)=>{
+
+        table.innerHTML += `
 
         <tr>
 
-            <td>${staff.name}</td>
+            <td>${escapeHTML(s.name)}</td>
 
-            <td>${staff.id}</td>
+            <td>${escapeHTML(s.id)}</td>
 
-            <td>${staff.department}</td>
+            <td>${escapeHTML(s.department || "-")}</td>
 
-            <td>${staff.username}</td>
+            <td>${s.expected}</td>
 
             <td>
+
                 <button
                     class="danger"
-                    onclick="deleteStaff('${staff.id}')">
+                    onclick="deleteStaff(${index})">
                     Delete
                 </button>
+
             </td>
 
         </tr>
@@ -966,338 +1170,187 @@ function renderStaff(){
 
     });
 
+}
 
-    html += "</table>";
 
-    box.innerHTML = html;
+function deleteStaff(index){
+
+    if(confirm(
+        "Delete this staff account?"
+    )){
+
+        staff.splice(index,1);
+
+        saveData();
+
+        loadStaffTable();
+        populateStaffSelects();
+        generateAllQR();
+
+    }
 
 }
 
 
-/* ================================
-   DELETE STAFF
-================================ */
+/* ==============================
+   STAFF SELECTS
+============================== */
 
-function deleteStaff(id){
+function populateStaffSelects(){
 
-    if(!confirm("Delete this staff member?")){
-        return;
-    }
+    const check =
+        document.getElementById("checkinStaff");
 
+    const checkout =
+        document.getElementById("checkoutStaff");
 
-    staffList =
-        staffList.filter(function(staff){
+    check.innerHTML =
+        '<option value="">Select Staff</option>';
 
-            return staff.id !== id;
+    checkout.innerHTML =
+        '<option value="">Select Staff</option>';
 
-        });
+    staff.forEach(s=>{
 
+        const option =
+        `<option value="${escapeHTML(s.id)}">
+            ${escapeHTML(s.name)} — ${escapeHTML(s.id)}
+        </option>`;
 
-    users =
-        users.filter(function(user){
-
-            return !(
-                user.role === "staff" &&
-                user.staffId === id
-            );
-
-        });
-
-
-    saveData();
-
-    renderStaff();
-
-    updateDashboard();
-
-}
-
-
-/* ================================
-   CHECK IN
-================================ */
-
-function checkIn(){
-
-    const id =
-        document.getElementById("checkInId")
-        .value.trim();
-
-
-    const staff =
-        staffList.find(function(s){
-
-            return s.id === id;
-
-        });
-
-
-    if(!staff){
-
-        showMessage(
-            "checkInMessage",
-            "Staff ID not found.",
-            false
-        );
-
-        return;
-    }
-
-
-    const date = getDate();
-
-    const existing =
-        attendance.find(function(record){
-
-            return (
-                record.staffId === id &&
-                record.date === date
-            );
-
-        });
-
-
-    if(existing){
-
-        showMessage(
-            "checkInMessage",
-            "This staff member has already checked in today.",
-            false
-        );
-
-        return;
-    }
-
-
-    const now = new Date();
-
-    const time = getTime();
-
-
-    let status = "Present";
-
-
-    const hour =
-        new Intl.DateTimeFormat(
-            "en-GB",
-            {
-                timeZone:"Africa/Accra",
-                hour:"2-digit",
-                minute:"2-digit",
-                hour12:false
-            }
-        ).format(now);
-
-
-    const parts = hour.split(":");
-
-    const minutes =
-        parseInt(parts[0]) * 60 +
-        parseInt(parts[1]);
-
-
-    const workStart = 9 * 60;
-
-    const lateLimit = workStart + 15;
-
-
-    if(minutes > lateLimit){
-        status = "Late";
-    }
-
-
-    attendance.push({
-
-        staffName:staff.name,
-        staffId:staff.id,
-        department:staff.department,
-        date:date,
-        checkIn:time,
-        checkOut:"",
-        status:status
+        check.innerHTML += option;
+        checkout.innerHTML += option;
 
     });
 
-
-    saveData();
-
-
-    showMessage(
-        "checkInMessage",
-        staff.name +
-        " checked in successfully at " +
-        time,
-        true
-    );
-
-
-    document.getElementById("checkInId").value="";
-
-    updateDashboard();
-
 }
 
 
-/* ================================
-   CHECK OUT
-================================ */
-
-function checkOut(){
-
-    const id =
-        document.getElementById("checkOutId")
-        .value.trim();
-
-
-    const date = getDate();
-
-
-    const record =
-        attendance.find(function(r){
-
-            return (
-                r.staffId === id &&
-                r.date === date
-            );
-
-        });
-
-
-    if(!record){
-
-        showMessage(
-            "checkOutMessage",
-            "No check-in record found for this staff member today.",
-            false
-        );
-
-        return;
-    }
-
-
-    if(record.checkOut){
-
-        showMessage(
-            "checkOutMessage",
-            "This staff member has already checked out.",
-            false
-        );
-
-        return;
-    }
-
-
-    record.checkOut = getTime();
-
-
-    saveData();
-
-
-    showMessage(
-        "checkOutMessage",
-        record.staffName +
-        " checked out successfully at " +
-        record.checkOut,
-        true
-    );
-
-
-    document.getElementById("checkOutId").value="";
-
-    updateDashboard();
-
-}
-
-
-/* ================================
-   DASHBOARD
-================================ */
+/* ==============================
+   ADMIN DASHBOARD
+============================== */
 
 function updateDashboard(){
 
+    const date = today();
+
+    const records =
+        attendance.filter(a=>a.date===date);
+
     document.getElementById("totalStaff")
-        .textContent = staffList.length;
-
-
-    const today = getDate();
-
-
-    const todayRecords =
-        attendance.filter(function(record){
-
-            return record.date === today;
-
-        });
-
+        .textContent=staff.length;
 
     document.getElementById("presentToday")
-        .textContent = todayRecords.length;
+        .textContent=records.length;
 
+    document.getElementById("lateToday")
+        .textContent=
+        records.filter(a=>a.status==="Late").length;
 
     document.getElementById("checkedOutToday")
-        .textContent =
-        todayRecords.filter(function(record){
-
-            return record.checkOut !== "";
-
-        }).length;
+        .textContent=
+        records.filter(a=>a.checkOut).length;
 
 
-    document.getElementById("totalRecords")
-        .textContent = attendance.length;
+    const table =
+        document.getElementById("dashboardTable");
+
+    table.innerHTML="";
+
+
+    staff.forEach(s=>{
+
+        const r =
+            records.find(a=>a.staffId===s.id);
+
+        table.innerHTML += `
+
+        <tr>
+
+            <td>${escapeHTML(s.name)}</td>
+
+            <td>${escapeHTML(s.id)}</td>
+
+            <td>${r ? r.checkIn : "-"}</td>
+
+            <td>
+                ${
+                    r
+                    ?
+                    `<span class="badge ${
+                        r.status==="Late"
+                        ? "late"
+                        : "present"
+                    }">${r.status}</span>`
+                    :
+                    `<span class="badge absent">Absent</span>`
+                }
+            </td>
+
+            <td>${r && r.checkOut ? r.checkOut : "-"}</td>
+
+        </tr>
+
+        `;
+
+    });
 
 }
 
 
-/* ================================
-   DAILY REPORT
-================================ */
+/* ==============================
+   REPORT
+============================== */
 
-function generateDailyReport(){
+function generateReport(){
 
     const date =
         document.getElementById("reportDate").value ||
-        getDate();
-
+        today();
 
     const records =
-        attendance.filter(function(record){
+        attendance.filter(a=>a.date===date);
 
-            return record.date === date;
+    const table =
+        document.getElementById("reportTable");
 
-        });
-
-
-    let html = `
-
-    <h3>Attendance for ${date}</h3>
-
-    <table>
-
-    <tr>
-        <th>Name</th>
-        <th>Staff ID</th>
-        <th>Department</th>
-        <th>Check-In</th>
-        <th>Check-Out</th>
-        <th>Status</th>
-    </tr>
-
-    `;
+    table.innerHTML="";
 
 
-    records.forEach(function(record){
+    staff.forEach(s=>{
 
-        html += `
+        const r =
+            records.find(a=>a.staffId===s.id);
+
+        table.innerHTML += `
 
         <tr>
 
-            <td>${record.staffName}</td>
-            <td>${record.staffId}</td>
-            <td>${record.department}</td>
-            <td>${record.checkIn}</td>
-            <td>${record.checkOut || "Not checked out"}</td>
-            <td>${record.status}</td>
+            <td>${date}</td>
+            <td>${escapeHTML(s.name)}</td>
+            <td>${escapeHTML(s.id)}</td>
+            <td>${escapeHTML(s.department || "-")}</td>
+
+            <td>${r ? r.checkIn : "-"}</td>
+
+            <td>
+                ${
+                    r
+                    ?
+                    r.status
+                    :
+                    "Absent"
+                }
+            </td>
+
+            <td>
+                ${
+                    r && r.checkOut
+                    ?
+                    r.checkOut
+                    :
+                    "-"
+                }
+            </td>
 
         </tr>
 
@@ -1305,79 +1358,44 @@ function generateDailyReport(){
 
     });
 
-
-    html += "</table>";
-
-
-    if(records.length === 0){
-
-        html += "<p>No attendance records found.</p>";
-
-    }
-
-
-    document.getElementById("dailyReport")
-        .innerHTML = html;
-
 }
 
 
-/* ================================
-   MONTHLY REPORT
-================================ */
+/* ==============================
+   HISTORY
+============================== */
 
-function generateMonthlyReport(){
+function loadHistory(){
 
-    const month =
-        document.getElementById("reportMonth").value;
+    const from =
+        document.getElementById("historyFrom").value;
 
+    const to =
+        document.getElementById("historyTo").value;
 
-    if(!month){
+    const table =
+        document.getElementById("historyTable");
 
-        alert("Please select a month.");
-
-        return;
-    }
-
-
-    const records =
-        attendance.filter(function(record){
-
-            return record.date.startsWith(month);
-
-        });
+    table.innerHTML="";
 
 
-    let html = `
+    attendance
+    .filter(a =>
+        (!from || a.date>=from) &&
+        (!to || a.date<=to)
+    )
+    .forEach(a=>{
 
-    <h3>Monthly Report: ${month}</h3>
-
-    <table>
-
-    <tr>
-        <th>Name</th>
-        <th>Staff ID</th>
-        <th>Date</th>
-        <th>Check-In</th>
-        <th>Check-Out</th>
-        <th>Status</th>
-    </tr>
-
-    `;
-
-
-    records.forEach(function(record){
-
-        html += `
+        table.innerHTML += `
 
         <tr>
 
-            <td>${record.staffName}</td>
-            <td>${record.staffId}</td>
-            <td>${record.date}</td>
-            <td>${record.checkIn}</td>
-            <td>${record.checkOut || "Not checked out"}</td>
-            <td>${record.status}</td>
+            <td>${a.date}</td>
+            <td>${escapeHTML(a.name)}</td>
+            <td>${escapeHTML(a.staffId)}</td>
+            <td>${a.checkIn}</td>
+            <td>${a.status}</td>
+            <td>${a.checkOut || "-"}</td>
 
         </tr>
 
@@ -1385,476 +1403,504 @@ function generateMonthlyReport(){
 
     });
 
-
-    html += "</table>";
-
-
-    if(records.length === 0){
-
-        html += "<p>No records found for this month.</p>";
-
-    }
-
-
-    document.getElementById("monthlyReport")
-        .innerHTML = html;
-
 }
 
 
-/* ================================
-   STAFF PERSONAL ATTENDANCE
-================================ */
-
-function displayMyAttendance(){
-
-    if(!currentUser ||
-       currentUser.role !== "staff"){
-
-        return;
-    }
-
-
-    const staff =
-        staffList.find(function(s){
-
-            return s.id === currentUser.staffId;
-
-        });
-
-
-    if(!staff){
-
-        return;
-    }
-
-
-    document.getElementById("staffProfile")
-        .innerHTML = `
-
-        <div class="profile">
-
-            <h3>${staff.name}</h3>
-
-            <p><strong>Staff ID:</strong> ${staff.id}</p>
-
-            <p><strong>Department:</strong> ${staff.department}</p>
-
-            <p><strong>Username:</strong> ${staff.username}</p>
-
-        </div>
-
-        `;
-
-
-    const records =
-        attendance.filter(function(record){
-
-            return record.staffId === staff.id;
-
-        });
-
-
-    let html = `
-
-    <table>
-
-    <tr>
-        <th>Date</th>
-        <th>Check-In</th>
-        <th>Check-Out</th>
-        <th>Status</th>
-    </tr>
-
-    `;
-
-
-    records.forEach(function(record){
-
-        html += `
-
-        <tr>
-
-            <td>${record.date}</td>
-            <td>${record.checkIn}</td>
-            <td>${record.checkOut || "Not checked out"}</td>
-            <td>${record.status}</td>
-
-        </tr>
-
-        `;
-
-    });
-
-
-    html += "</table>";
-
-
-    if(records.length === 0){
-
-        html += "<p>No attendance records yet.</p>";
-
-    }
-
-
-    document.getElementById("myAttendanceTable")
-        .innerHTML = html;
-
-}
-
-
-/* ================================
-   ADMIN CHANGE USERNAME
-================================ */
-
-function changeAdminUsername(){
-
-    if(currentUser.role !== "admin"){
-        return;
-    }
-
-
-    const newUsername =
-        document.getElementById("newAdminUsername")
-        .value.trim();
-
-
-    if(!newUsername){
-
-        showMessage(
-            "settingsMessage",
-            "Enter a new username.",
-            false
-        );
-
-        return;
-    }
-
-
-    if(newUsername === currentUser.username){
-
-        showMessage(
-            "settingsMessage",
-            "The new username is the same as the current username.",
-            false
-        );
-
-        return;
-    }
-
-
-    const usernameExists =
-        users.some(function(user){
-
-            return (
-                user.username === newUsername &&
-                user !== currentUser
-            );
-
-        });
-
-
-    if(usernameExists){
-
-        showMessage(
-            "settingsMessage",
-            "That username is already being used.",
-            false
-        );
-
-        return;
-    }
-
-
-    currentUser.username = newUsername;
-
-
-    const adminUser =
-        users.find(function(user){
-
-            return user.role === "admin";
-
-        });
-
-
-    if(adminUser){
-
-        adminUser.username = newUsername;
-
-    }
-
-
-    saveData();
-
-
-    document.getElementById(
-        "currentAdminUsername"
-    ).value = newUsername;
-
-
-    document.getElementById(
-        "newAdminUsername"
-    ).value = "";
-
-
-    document.getElementById(
-        "welcomeText"
-    ).textContent =
-        "Logged in as: " + newUsername;
-
-
-    showMessage(
-        "settingsMessage",
-        "Admin username changed successfully.",
-        true
-    );
-
-}
-
-
-/* ================================
-   ADMIN CHANGE PASSWORD
-================================ */
-
-function changeAdminPassword(){
-
-    if(currentUser.role !== "admin"){
-        return;
-    }
-
-
-    const currentPassword =
-        document.getElementById("currentAdminPassword")
-        .value;
-
-
-    const newPassword =
-        document.getElementById("newAdminPassword")
-        .value;
-
-
-    const confirmPassword =
-        document.getElementById("confirmAdminPassword")
-        .value;
-
-
-    const adminUser =
-        users.find(function(user){
-
-            return user.role === "admin";
-
-        });
-
-
-    if(!adminUser){
-
-        showMessage(
-            "settingsMessage",
-            "Admin account could not be found.",
-            false
-        );
-
-        return;
-    }
-
-
-    if(adminUser.password !== currentPassword){
-
-        showMessage(
-            "settingsMessage",
-            "Current password is incorrect.",
-            false
-        );
-
-        return;
-    }
-
-
-    if(newPassword.length < 6){
-
-        showMessage(
-            "settingsMessage",
-            "New password must be at least 6 characters.",
-            false
-        );
-
-        return;
-    }
-
-
-    if(newPassword !== confirmPassword){
-
-        showMessage(
-            "settingsMessage",
-            "New passwords do not match.",
-            false
-        );
-
-        return;
-    }
-
-
-    adminUser.password = newPassword;
-
-    currentUser.password = newPassword;
-
-
-    saveData();
-
-
-    document.getElementById(
-        "currentAdminPassword"
-    ).value = "";
-
-    document.getElementById(
-        "newAdminPassword"
-    ).value = "";
-
-    document.getElementById(
-        "confirmAdminPassword"
-    ).value = "";
-
-
-    showMessage(
-        "settingsMessage",
-        "Admin password changed successfully.",
-        true
-    );
-
-}
-
-
-/* ================================
+/* ==============================
    CSV EXPORT
-================================ */
+============================== */
 
 function exportCSV(){
 
-    if(attendance.length === 0){
-
-        alert("There are no attendance records to export.");
-
-        return;
-    }
-
-
     let csv =
-        "Staff Name,Staff ID,Department,Date,Check In,Check Out,Status\n";
+    "Date,Staff Name,Staff ID,Department,Check-In,Status,Check-Out\n";
 
-
-    attendance.forEach(function(record){
+    attendance.forEach(a=>{
 
         csv +=
-            `"${record.staffName}",` +
-            `"${record.staffId}",` +
-            `"${record.department}",` +
-            `"${record.date}",` +
-            `"${record.checkIn}",` +
-            `"${record.checkOut}",` +
-            `"${record.status}"\n`;
+        `"${a.date}","${a.name}","${a.staffId}","${a.department || ""}","${a.checkIn}","${a.status}","${a.checkOut || ""}"\n`;
 
     });
-
 
     const blob =
         new Blob([csv],{
             type:"text/csv"
         });
 
-
     const url =
         URL.createObjectURL(blob);
-
 
     const link =
         document.createElement("a");
 
-
-    link.href = url;
-
-    link.download =
-        "attendance-report.csv";
-
+    link.href=url;
+    link.download="attendance-report.csv";
 
     link.click();
-
 
     URL.revokeObjectURL(url);
 
 }
 
 
-/* ================================
+/* ==============================
+   QR CODES
+============================== */
+
+function generateAllQR(){
+
+    const container =
+        document.getElementById("qrContainer");
+
+    container.innerHTML="";
+
+
+    staff.forEach(s=>{
+
+        const box =
+            document.createElement("div");
+
+        box.className="qr-box";
+
+        box.innerHTML = `
+            <h3>${escapeHTML(s.name)}</h3>
+            <p>Staff ID: ${escapeHTML(s.id)}</p>
+            <div id="qr-${safeId(s.id)}"></div>
+        `;
+
+        container.appendChild(box);
+
+        new QRCode(
+            document.getElementById(
+                "qr-"+safeId(s.id)
+            ),
+            {
+                text:s.id,
+                width:180,
+                height:180
+            }
+        );
+
+    });
+
+}
+
+
+/* ==============================
+   ADMIN SETTINGS
+============================== */
+
+function changeAdminLogin(){
+
+    const username =
+        document.getElementById("newAdminUsername")
+        .value.trim();
+
+    const password =
+        document.getElementById("newAdminPassword")
+        .value;
+
+    if(!username || !password){
+
+        showMessage(
+            "settingsMessage",
+            "❌ Enter both username and password."
+        );
+
+        return;
+    }
+
+    admin.username=username;
+    admin.password=password;
+
+    saveData();
+
+    document.getElementById("newAdminUsername").value="";
+    document.getElementById("newAdminPassword").value="";
+
+    showMessage(
+        "settingsMessage",
+        "✅ Admin username and password changed successfully."
+    );
+
+}
+
+
+/* ==============================
+   LEAVE REQUEST
+============================== */
+
+function requestLeave(){
+
+    const type =
+        document.getElementById("leaveType").value;
+
+    const date =
+        document.getElementById("leaveDate").value;
+
+    const reason =
+        document.getElementById("leaveReason").value.trim();
+
+    if(!date || !reason){
+
+        showMessage(
+            "leaveMessage",
+            "❌ Please select a date and enter a reason."
+        );
+
+        return;
+    }
+
+    leaves.push({
+
+        id:Date.now(),
+
+        staffId:currentUser.id,
+
+        staffName:currentUser.name,
+
+        type:type,
+
+        date:date,
+
+        reason:reason,
+
+        status:"Pending"
+
+    });
+
+    saveData();
+
+    document.getElementById("leaveReason").value="";
+
+    showMessage(
+        "leaveMessage",
+        "✅ Leave request submitted."
+    );
+
+    loadMyLeaves();
+
+}
+
+
+/* ==============================
+   ADMIN LEAVE
+============================== */
+
+function loadLeaveAdmin(){
+
+    const table =
+        document.getElementById("leaveTable");
+
+    table.innerHTML="";
+
+
+    leaves.forEach(l=>{
+
+        table.innerHTML += `
+
+        <tr>
+
+            <td>${escapeHTML(l.staffName)}</td>
+            <td>${escapeHTML(l.type)}</td>
+            <td>${l.date}</td>
+            <td>${escapeHTML(l.reason)}</td>
+
+            <td>
+                <span class="badge ${
+                    l.status==="Approved"
+                    ? "approved"
+                    :
+                    l.status==="Rejected"
+                    ? "rejected"
+                    :
+                    "pending"
+                }">
+                    ${l.status}
+                </span>
+            </td>
+
+            <td>
+
+                ${
+                    l.status==="Pending"
+                    ?
+                    `
+                    <button
+                    class="success"
+                    onclick="updateLeave(${l.id},'Approved')">
+                    Approve
+                    </button>
+
+                    <button
+                    class="danger"
+                    onclick="updateLeave(${l.id},'Rejected')">
+                    Reject
+                    </button>
+                    `
+                    :
+                    "-"
+                }
+
+            </td>
+
+        </tr>
+
+        `;
+
+    });
+
+}
+
+
+function updateLeave(id,status){
+
+    const leave =
+        leaves.find(l=>l.id===id);
+
+    if(leave){
+
+        leave.status=status;
+
+        saveData();
+
+        loadLeaveAdmin();
+
+    }
+
+}
+
+
+/* ==============================
+   STAFF DASHBOARD
+============================== */
+
+function loadStaffDashboard(){
+
+    if(!currentUser) return;
+
+    const records =
+        attendance.filter(
+            a=>a.staffId===currentUser.id
+        );
+
+    document.getElementById("myPresent")
+        .textContent=records.length;
+
+    document.getElementById("myLate")
+        .textContent=
+        records.filter(a=>a.status==="Late").length;
+
+    document.getElementById("myCheckedOut")
+        .textContent=
+        records.filter(a=>a.checkOut).length;
+
+
+    const todayRecord =
+        records.find(a=>a.date===today());
+
+    const box =
+        document.getElementById("myToday");
+
+    if(todayRecord){
+
+        box.innerHTML=`
+
+        <p><b>Date:</b> ${todayRecord.date}</p>
+        <p><b>Check-In:</b> ${todayRecord.checkIn}</p>
+        <p><b>Status:</b> ${todayRecord.status}</p>
+        <p><b>Check-Out:</b>
+        ${todayRecord.checkOut || "Not yet checked out"}
+        </p>
+
+        `;
+
+    }else{
+
+        box.innerHTML=
+        "<p>❌ You have not checked in today.</p>";
+
+    }
+
+}
+
+
+/* ==============================
+   MY ATTENDANCE
+============================== */
+
+function loadMyAttendance(){
+
+    const table =
+        document.getElementById("myAttendanceTable");
+
+    table.innerHTML="";
+
+
+    attendance
+    .filter(a=>a.staffId===currentUser.id)
+    .sort((a,b)=>b.date.localeCompare(a.date))
+    .forEach(a=>{
+
+        table.innerHTML += `
+
+        <tr>
+
+            <td>${a.date}</td>
+
+            <td>${a.checkIn}</td>
+
+            <td>${a.status}</td>
+
+            <td>${a.checkOut || "-"}</td>
+
+        </tr>
+
+        `;
+
+    });
+
+}
+
+
+/* ==============================
+   MY LEAVE
+============================== */
+
+function loadMyLeaves(){
+
+    const table =
+        document.getElementById("myLeaveTable");
+
+    table.innerHTML="";
+
+
+    leaves
+    .filter(l=>l.staffId===currentUser.id)
+    .forEach(l=>{
+
+        table.innerHTML += `
+
+        <tr>
+
+            <td>${escapeHTML(l.type)}</td>
+
+            <td>${l.date}</td>
+
+            <td>${escapeHTML(l.reason)}</td>
+
+            <td>
+
+                <span class="badge ${
+                    l.status==="Approved"
+                    ? "approved"
+                    :
+                    l.status==="Rejected"
+                    ? "rejected"
+                    :
+                    "pending"
+                }">
+                    ${l.status}
+                </span>
+
+            </td>
+
+        </tr>
+
+        `;
+
+    });
+
+}
+
+
+/* ==============================
+   LOAD EVERYTHING
+============================== */
+
+function loadEverything(){
+
+    populateStaffSelects();
+    loadStaffTable();
+    updateDashboard();
+    generateAllQR();
+    loadLeaveAdmin();
+
+}
+
+
+/* ==============================
+   CLEAR DATA
+============================== */
+
+function clearAllData(){
+
+    if(confirm(
+        "WARNING: This will delete all attendance records. Continue?"
+    )){
+
+        attendance=[];
+
+        saveData();
+
+        updateDashboard();
+
+        alert(
+            "Attendance data cleared."
+        );
+
+    }
+
+}
+
+
+/* ==============================
    MESSAGE
-================================ */
+============================== */
 
-function showMessage(
-    id,
-    text,
-    success
-){
+function showMessage(id,text){
 
-    const element =
-        document.getElementById(id);
-
-
-    element.textContent = text;
-
-    element.className =
-        "message " +
-        (success
-            ? "success-message"
-            : "error-message");
-
-
-    element.style.display = "block";
-
-
-    setTimeout(function(){
-
-        element.style.display = "none";
-
-    },5000);
+    document.getElementById(id).innerHTML =
+        '<div class="message">'+text+'</div>';
 
 }
 
 
-/* ================================
-   LOGOUT
-================================ */
+/* ==============================
+   SECURITY HELPERS
+============================== */
 
-function logout(){
+function escapeHTML(value){
 
-    currentUser = null;
+    return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
+}
 
-    document.getElementById("systemPage")
-        .classList.add("hidden");
+function safeId(value){
 
-
-    document.getElementById("loginPage")
-        .classList.remove("hidden");
-
-
-    document.getElementById("loginUsername")
-        .value = "";
-
-    document.getElementById("loginPassword")
-        .value = "";
+    return String(value)
+    .replace(/[^a-zA-Z0-9_-]/g,"");
 
 }
 
 
-/* ================================
+/* ==============================
    INITIAL SETUP
-================================ */
+============================== */
 
 document.getElementById("reportDate")
-    .value = getDate();
+    .value=today();
 
+document.getElementById("historyFrom")
+    .value=today();
 
-document.getElementById("reportMonth")
-    .value = getDate().substring(0,7);
+document.getElementById("historyTo")
+    .value=today();
 
 </script>
 
