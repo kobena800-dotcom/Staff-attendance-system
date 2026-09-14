@@ -1,1 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Staff Attendance System</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f2f5f9;
+    color:#222;
+}
+
+header{
+    background:#123c69;
+    color:white;
+    padding:18px;
+    text-align:center;
+}
+
+header h1{
+    margin:0;
+    font-size:24px;
+}
+
+header p{
+    margin:7px 0 0;
+}
+
+#clock{
+    margin-top:8px;
+    font-weight:bold;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+input,select,button{
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+    margin-bottom:12px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:15px;
+}
+
+button{
+    background:#123c69;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.danger{
+    background:#c62828;
+}
+
+.success{
+    background:#168a45;
+}
+
+.nav{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:20px;
+}
+
+.nav button{
+    width:auto;
+    margin:0;
+    padding:10px 15px;
+}
+
+.hidden{
+    display:none;
+}
+
+.login-box{
+    max-width:420px;
+    margin:50px auto;
+}
+
+.message{
+    padding:12px;
+    border-radius:6px;
+    margin-bottom:15px;
+    display:none;
+}
+
+.success-message{
+    background:#d8f5df;
+    color:#176b2f;
+}
+
+.error-message{
+    background:#ffdede;
+    color:#9b1c1c;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+}
+
+.stat{
+    background:#123c69;
+    color:white;
+    padding:20px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.stat h2{
+    margin:0;
+    font-size:30px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+    overflow-x:auto;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:10px;
+    text-align:left;
+}
+
+th{
+    background:#123c69;
+    color:white;
+}
+
+.small-note{
+    font-size:13px;
+    color:#666;
+}
+
+.profile{
+    background:#eef5ff;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:15px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Staff Attendance System</h1>
+    <p>Professional Attendance Tracking & Management</p>
+    <div id="clock"></div>
+</header>
+
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="container">
+
+    <div class="card login-box">
+
+        <h2>System Login</h2>
+
+        <div id="loginMessage" class="message"></div>
+
+        <label>Username</label>
+        <input type="text" id="loginUsername" placeholder="Enter username">
+
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter password">
+
+        <label>Login As</label>
+        <select id="loginRole">
+            <option value="admin">Admin</option>
+            <option value="staff">Staff</option>
+        </select>
+
+        <button onclick="login()">Login</button>
+
+        <p class="small-note">
+            Default admin account: admin / admin123
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- SYSTEM PAGE -->
+<div id="systemPage" class="hidden">
+
+<header>
+    <div id="welcomeText"></div>
+</header>
+
+<div class="container">
+
+    <!-- NAVIGATION -->
+    <div class="nav">
+
+        <button id="dashboardButton" onclick="showSection('dashboard')">
+            Dashboard
+        </button>
+
+        <button id="staffButton" onclick="showSection('staffSection')">
+            Staff Management
+        </button>
+
+        <button id="attendanceButton" onclick="showSection('attendanceSection')">
+            Attendance
+        </button>
+
+        <button id="reportsButton" onclick="showSection('reportsSection')">
+            Reports
+        </button>
+
+        <button id="myAttendanceButton" onclick="showSection('myAttendanceSection')">
+            My Attendance
+        </button>
+
+        <button id="settingsButton" onclick="showSection('settingsSection')">
+            Admin Settings
+        </button>
+
+        <button onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+
+    <!-- DASHBOARD -->
+    <section id="dashboard">
+
+        <div class="card">
+            <h2>Admin Dashboard</h2>
+
+            <div class="stats">
+
+                <div class="stat">
+                    <h2 id="totalStaff">0</h2>
+                    <p>Total Staff</p>
+                </div>
+
+                <div class="stat">
+                    <h2 id="presentToday">0</h2>
+                    <p>Present Today</p>
+                </div>
+
+                <div class="stat">
+                    <h2 id="checkedOutToday">0</h2>
+                    <p>Checked Out Today</p>
+                </div>
+
+                <div class="stat">
+                    <h2 id="totalRecords">0</h2>
+                    <p>Total Records</p>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- STAFF MANAGEMENT -->
+    <section id="staffSection" class="hidden">
+
+        <div class="card">
+
+            <h2>Register Staff</h2>
+
+            <input type="text" id="staffName" placeholder="Staff full name">
+
+            <input type="text" id="staffId" placeholder="Staff ID">
+
+            <input type="text" id="staffDepartment" placeholder="Department">
+
+            <input type="text" id="staffUsername" placeholder="Staff username">
+
+            <input type="password" id="staffPassword" placeholder="Staff password">
+
+            <button onclick="addStaff()">
+                Register Staff
+            </button>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Registered Staff</h2>
+
+            <div id="staffTable"></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ATTENDANCE -->
+    <section id="attendanceSection" class="hidden">
+
+        <div class="card">
+
+            <h2>Staff Check-In</h2>
+
+            <input type="text" id="checkInId" placeholder="Enter Staff ID">
+
+            <button onclick="checkIn()">
+                Check In
+            </button>
+
+            <div id="checkInMessage" class="message"></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Staff Check-Out</h2>
+
+            <input type="text" id="checkOutId" placeholder="Enter Staff ID">
+
+            <button onclick="checkOut()">
+                Check Out
+            </button>
+
+            <div id="checkOutMessage" class="message"></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- REPORTS -->
+    <section id="reportsSection" class="hidden">
+
+        <div class="card">
+
+            <h2>Daily Report</h2>
+
+            <input type="date" id="reportDate">
+
+            <button onclick="generateDailyReport()">
+                Generate Daily Report
+            </button>
+
+            <div id="dailyReport"></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Monthly Report</h2>
+
+            <input type="month" id="reportMonth">
+
+            <button onclick="generateMonthlyReport()">
+                Generate Monthly Report
+            </button>
+
+            <div id="monthlyReport"></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <button onclick="exportCSV()">
+                Export Attendance CSV
+            </button>
+        </div>
+
+    </section>
+
+
+    <!-- MY ATTENDANCE -->
+    <section id="myAttendanceSection" class="hidden">
+
+        <div class="card">
+
+            <h2>My Attendance</h2>
+
+            <div id="staffProfile"></div>
+
+            <div id="myAttendanceTable"></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ADMIN SETTINGS -->
+    <section id="settingsSection" class="hidden">
+
+        <div class="card">
+
+            <h2>Admin Settings</h2>
+
+            <p>
+                Change your administrator username and password here.
+            </p>
+
+            <div id="settingsMessage" class="message"></div>
+
+
+            <h3>Change Username</h3>
+
+            <label>Current Username</label>
+            <input
+                type="text"
+                id="currentAdminUsername"
+                readonly
+            >
+
+            <label>New Username</label>
+            <input
+                type="text"
+                id="newAdminUsername"
+                placeholder="Enter new username"
+            >
+
+            <button onclick="changeAdminUsername()">
+                Change Username
+            </button>
+
+
+            <hr>
+
+
+            <h3>Change Password</h3>
+
+            <label>Current Password</label>
+            <input
+                type="password"
+                id="currentAdminPassword"
+                placeholder="Enter current password"
+            >
+
+            <label>New Password</label>
+            <input
+                type="password"
+                id="newAdminPassword"
+                placeholder="Enter new password"
+            >
+
+            <label>Confirm New Password</label>
+            <input
+                type="password"
+                id="confirmAdminPassword"
+                placeholder="Confirm new password"
+            >
+
+            <button onclick="changeAdminPassword()">
+                Change Password
+            </button>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>Security Information</h3>
+
+            <p>
+                Keep your administrator username and password private.
+            </p>
+
+            <p class="small-note">
+                This current version stores login information in your
+                browser for testing. It should not be considered
+                production-level security.
+            </p>
+
+        </div>
+
+    </section>
+
+</div>
+</div>
+
+
+<script>
+
+/* ================================
+   DATA
+================================ */
+
+let staffList =
+    JSON.parse(localStorage.getItem("staffList")) || [];
+
+let attendance =
+    JSON.parse(localStorage.getItem("attendance")) || [];
+
+let users =
+    JSON.parse(localStorage.getItem("users")) || [];
+
+let currentUser = null;
+
+
+/* ================================
+   DEFAULT ADMIN
+================================ */
+
+if(users.length === 0){
+
+    users.push({
+        username:"admin",
+        password:"admin123",
+        role:"admin",
+        staffId:""
+    });
+
+    saveData();
+}
+
+
+/* ================================
+   SAVE DATA
+================================ */
+
+function saveData(){
+
+    localStorage.setItem(
+        "staffList",
+        JSON.stringify(staffList)
+    );
+
+    localStorage.setItem(
+        "attendance",
+        JSON.stringify(attendance)
+    );
+
+    localStorage.setItem(
+        "users",
+        JSON.stringify(users)
+    );
+}
+
+
+/* ================================
+   GHANA DATE & TIME
+================================ */
+
+function getDate(){
+
+    return new Intl.DateTimeFormat(
+        "en-CA",
+        {
+            timeZone:"Africa/Accra",
+            year:"numeric",
+            month:"2-digit",
+            day:"2-digit"
+        }
+    ).format(new Date());
+
+}
+
+
+function getTime(){
+
+    return new Intl.DateTimeFormat(
+        "en-GB",
+        {
+            timeZone:"Africa/Accra",
+            hour:"2-digit",
+            minute:"2-digit",
+            second:"2-digit"
+        }
+    ).format(new Date());
+
+}
+
+
+/* ================================
+   CLOCK
+================================ */
+
+function updateClock(){
+
+    const now =
+        new Intl.DateTimeFormat(
+            "en-GH",
+            {
+                timeZone:"Africa/Accra",
+                dateStyle:"full",
+                timeStyle:"medium"
+            }
+        ).format(new Date());
+
+    document.getElementById("clock").textContent = now;
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
+
+/* ================================
+   LOGIN
+================================ */
+
+function login(){
+
+    const username =
+        document.getElementById("loginUsername")
+        .value.trim();
+
+    const password =
+        document.getElementById("loginPassword")
+        .value;
+
+    const role =
+        document.getElementById("loginRole")
+        .value;
+
+
+    const user = users.find(function(u){
+
+        return (
+            u.username === username &&
+            u.password === password &&
+            u.role === role
+        );
+
+    });
+
+
+    if(!user){
+
+        showMessage(
+            "loginMessage",
+            "Incorrect username, password or role.",
+            false
+        );
+
+        return;
+    }
+
+
+    currentUser = user;
+
+
+    document.getElementById("loginPage")
+        .classList.add("hidden");
+
+    document.getElementById("systemPage")
+        .classList.remove("hidden");
+
+
+    document.getElementById("welcomeText")
+        .textContent =
+        "Logged in as: " +
+        currentUser.username;
+
+
+    configureInterface();
+
+}
+
+
+/* ================================
+   INTERFACE
+================================ */
+
+function configureInterface(){
+
+    const isAdmin =
+        currentUser.role === "admin";
+
+
+    document.getElementById("dashboardButton")
+        .classList.toggle("hidden",!isAdmin);
+
+    document.getElementById("staffButton")
+        .classList.toggle("hidden",!isAdmin);
+
+    document.getElementById("attendanceButton")
+        .classList.toggle("hidden",!isAdmin);
+
+    document.getElementById("reportsButton")
+        .classList.toggle("hidden",!isAdmin);
+
+    document.getElementById("settingsButton")
+        .classList.toggle("hidden",!isAdmin);
+
+    document.getElementById("myAttendanceButton")
+        .classList.toggle("hidden",isAdmin);
+
+
+    if(isAdmin){
+
+        showSection("dashboard");
+        updateDashboard();
+        renderStaff();
+
+        document.getElementById(
+            "currentAdminUsername"
+        ).value = currentUser.username;
+
+    }else{
+
+        showSection("myAttendance");
+        displayMyAttendance();
+
+    }
+
+}
+
+
+/* ================================
+   SHOW SECTION
+================================ */
+
+function showSection(section){
+
+    const sections = [
+
+        "dashboard",
+        "staffSection",
+        "attendanceSection",
+        "reportsSection",
+        "myAttendanceSection",
+        "settingsSection"
+
+    ];
+
+
+    sections.forEach(function(id){
+
+        document.getElementById(id)
+            .classList.add("hidden");
+
+    });
+
+
+    if(section === "myAttendance"){
+
+        document.getElementById("myAttendanceSection")
+            .classList.remove("hidden");
+
+        displayMyAttendance();
+
+        return;
+    }
+
+
+    document.getElementById(section)
+        .classList.remove("hidden");
+
+
+    if(section === "dashboard"){
+        updateDashboard();
+    }
+
+    if(section === "staffSection"){
+        renderStaff();
+    }
+
+    if(section === "settingsSection"){
+
+        document.getElementById(
+            "currentAdminUsername"
+        ).value = currentUser.username;
+
+    }
+
+}
+
+
+/* ================================
+   REGISTER STAFF
+================================ */
+
+function addStaff(){
+
+    if(currentUser.role !== "admin"){
+        return;
+    }
+
+
+    const name =
+        document.getElementById("staffName")
+        .value.trim();
+
+    const id =
+        document.getElementById("staffId")
+        .value.trim();
+
+    const department =
+        document.getElementById("staffDepartment")
+        .value.trim();
+
+    const username =
+        document.getElementById("staffUsername")
+        .value.trim();
+
+    const password =
+        document.getElementById("staffPassword")
+        .value;
+
+
+    if(
+        !name ||
+        !id ||
+        !department ||
+        !username ||
+        !password
+    ){
+
+        alert("Please fill in all staff fields.");
+
+        return;
+    }
+
+
+    if(
+        staffList.some(function(staff){
+            return staff.id === id;
+        })
+    ){
+
+        alert("This Staff ID already exists.");
+
+        return;
+    }
+
+
+    if(
+        users.some(function(user){
+            return user.username === username;
+        })
+    ){
+
+        alert("This username already exists.");
+
+        return;
+    }
+
+
+    staffList.push({
+
+        name:name,
+        id:id,
+        department:department,
+        username:username
+
+    });
+
+
+    users.push({
+
+        username:username,
+        password:password,
+        role:"staff",
+        staffId:id
+
+    });
+
+
+    saveData();
+
+
+    document.getElementById("staffName").value="";
+    document.getElementById("staffId").value="";
+    document.getElementById("staffDepartment").value="";
+    document.getElementById("staffUsername").value="";
+    document.getElementById("staffPassword").value="";
+
+
+    alert("Staff registered successfully.");
+
+    renderStaff();
+
+    updateDashboard();
+
+}
+
+
+/* ================================
+   DISPLAY STAFF
+================================ */
+
+function renderStaff(){
+
+    const box =
+        document.getElementById("staffTable");
+
+
+    if(staffList.length === 0){
+
+        box.innerHTML =
+            "<p>No staff registered yet.</p>";
+
+        return;
+    }
+
+
+    let html = `
+
+    <table>
+
+    <tr>
+        <th>Name</th>
+        <th>ID</th>
+        <th>Department</th>
+        <th>Username</th>
+        <th>Action</th>
+    </tr>
+    `;
+
+
+    staffList.forEach(function(staff){
+
+        html += `
+
+        <tr>
+
+            <td>${staff.name}</td>
+
+            <td>${staff.id}</td>
+
+            <td>${staff.department}</td>
+
+            <td>${staff.username}</td>
+
+            <td>
+                <button
+                    class="danger"
+                    onclick="deleteStaff('${staff.id}')">
+                    Delete
+                </button>
+            </td>
+
+        </tr>
+
+        `;
+
+    });
+
+
+    html += "</table>";
+
+    box.innerHTML = html;
+
+}
+
+
+/* ================================
+   DELETE STAFF
+================================ */
+
+function deleteStaff(id){
+
+    if(!confirm("Delete this staff member?")){
+        return;
+    }
+
+
+    staffList =
+        staffList.filter(function(staff){
+
+            return staff.id !== id;
+
+        });
+
+
+    users =
+        users.filter(function(user){
+
+            return !(
+                user.role === "staff" &&
+                user.staffId === id
+            );
+
+        });
+
+
+    saveData();
+
+    renderStaff();
+
+    updateDashboard();
+
+}
+
+
+/* ================================
+   CHECK IN
+================================ */
+
+function checkIn(){
+
+    const id =
+        document.getElementById("checkInId")
+        .value.trim();
+
+
+    const staff =
+        staffList.find(function(s){
+
+            return s.id === id;
+
+        });
+
+
+    if(!staff){
+
+        showMessage(
+            "checkInMessage",
+            "Staff ID not found.",
+            false
+        );
+
+        return;
+    }
+
+
+    const date = getDate();
+
+    const existing =
+        attendance.find(function(record){
+
+            return (
+                record.staffId === id &&
+                record.date === date
+            );
+
+        });
+
+
+    if(existing){
+
+        showMessage(
+            "checkInMessage",
+            "This staff member has already checked in today.",
+            false
+        );
+
+        return;
+    }
+
+
+    const now = new Date();
+
+    const time = getTime();
+
+
+    let status = "Present";
+
+
+    const hour =
+        new Intl.DateTimeFormat(
+            "en-GB",
+            {
+                timeZone:"Africa/Accra",
+                hour:"2-digit",
+                minute:"2-digit",
+                hour12:false
+            }
+        ).format(now);
+
+
+    const parts = hour.split(":");
+
+    const minutes =
+        parseInt(parts[0]) * 60 +
+        parseInt(parts[1]);
+
+
+    const workStart = 9 * 60;
+
+    const lateLimit = workStart + 15;
+
+
+    if(minutes > lateLimit){
+        status = "Late";
+    }
+
+
+    attendance.push({
+
+        staffName:staff.name,
+        staffId:staff.id,
+        department:staff.department,
+        date:date,
+        checkIn:time,
+        checkOut:"",
+        status:status
+
+    });
+
+
+    saveData();
+
+
+    showMessage(
+        "checkInMessage",
+        staff.name +
+        " checked in successfully at " +
+        time,
+        true
+    );
+
+
+    document.getElementById("checkInId").value="";
+
+    updateDashboard();
+
+}
+
+
+/* ================================
+   CHECK OUT
+================================ */
+
+function checkOut(){
+
+    const id =
+        document.getElementById("checkOutId")
+        .value.trim();
+
+
+    const date = getDate();
+
+
+    const record =
+        attendance.find(function(r){
+
+            return (
+                r.staffId === id &&
+                r.date === date
+            );
+
+        });
+
+
+    if(!record){
+
+        showMessage(
+            "checkOutMessage",
+            "No check-in record found for this staff member today.",
+            false
+        );
+
+        return;
+    }
+
+
+    if(record.checkOut){
+
+        showMessage(
+            "checkOutMessage",
+            "This staff member has already checked out.",
+            false
+        );
+
+        return;
+    }
+
+
+    record.checkOut = getTime();
+
+
+    saveData();
+
+
+    showMessage(
+        "checkOutMessage",
+        record.staffName +
+        " checked out successfully at " +
+        record.checkOut,
+        true
+    );
+
+
+    document.getElementById("checkOutId").value="";
+
+    updateDashboard();
+
+}
+
+
+/* ================================
+   DASHBOARD
+================================ */
+
+function updateDashboard(){
+
+    document.getElementById("totalStaff")
+        .textContent = staffList.length;
+
+
+    const today = getDate();
+
+
+    const todayRecords =
+        attendance.filter(function(record){
+
+            return record.date === today;
+
+        });
+
+
+    document.getElementById("presentToday")
+        .textContent = todayRecords.length;
+
+
+    document.getElementById("checkedOutToday")
+        .textContent =
+        todayRecords.filter(function(record){
+
+            return record.checkOut !== "";
+
+        }).length;
+
+
+    document.getElementById("totalRecords")
+        .textContent = attendance.length;
+
+}
+
+
+/* ================================
+   DAILY REPORT
+================================ */
+
+function generateDailyReport(){
+
+    const date =
+        document.getElementById("reportDate").value ||
+        getDate();
+
+
+    const records =
+        attendance.filter(function(record){
+
+            return record.date === date;
+
+        });
+
+
+    let html = `
+
+    <h3>Attendance for ${date}</h3>
+
+    <table>
+
+    <tr>
+        <th>Name</th>
+        <th>Staff ID</th>
+        <th>Department</th>
+        <th>Check-In</th>
+        <th>Check-Out</th>
+        <th>Status</th>
+    </tr>
+
+    `;
+
+
+    records.forEach(function(record){
+
+        html += `
+
+        <tr>
+
+            <td>${record.staffName}</td>
+            <td>${record.staffId}</td>
+            <td>${record.department}</td>
+            <td>${record.checkIn}</td>
+            <td>${record.checkOut || "Not checked out"}</td>
+            <td>${record.status}</td>
+
+        </tr>
+
+        `;
+
+    });
+
+
+    html += "</table>";
+
+
+    if(records.length === 0){
+
+        html += "<p>No attendance records found.</p>";
+
+    }
+
+
+    document.getElementById("dailyReport")
+        .innerHTML = html;
+
+}
+
+
+/* ================================
+   MONTHLY REPORT
+================================ */
+
+function generateMonthlyReport(){
+
+    const month =
+        document.getElementById("reportMonth").value;
+
+
+    if(!month){
+
+        alert("Please select a month.");
+
+        return;
+    }
+
+
+    const records =
+        attendance.filter(function(record){
+
+            return record.date.startsWith(month);
+
+        });
+
+
+    let html = `
+
+    <h3>Monthly Report: ${month}</h3>
+
+    <table>
+
+    <tr>
+        <th>Name</th>
+        <th>Staff ID</th>
+        <th>Date</th>
+        <th>Check-In</th>
+        <th>Check-Out</th>
+        <th>Status</th>
+    </tr>
+
+    `;
+
+
+    records.forEach(function(record){
+
+        html += `
+
+        <tr>
+
+            <td>${record.staffName}</td>
+            <td>${record.staffId}</td>
+            <td>${record.date}</td>
+            <td>${record.checkIn}</td>
+            <td>${record.checkOut || "Not checked out"}</td>
+            <td>${record.status}</td>
+
+        </tr>
+
+        `;
+
+    });
+
+
+    html += "</table>";
+
+
+    if(records.length === 0){
+
+        html += "<p>No records found for this month.</p>";
+
+    }
+
+
+    document.getElementById("monthlyReport")
+        .innerHTML = html;
+
+}
+
+
+/* ================================
+   STAFF PERSONAL ATTENDANCE
+================================ */
+
+function displayMyAttendance(){
+
+    if(!currentUser ||
+       currentUser.role !== "staff"){
+
+        return;
+    }
+
+
+    const staff =
+        staffList.find(function(s){
+
+            return s.id === currentUser.staffId;
+
+        });
+
+
+    if(!staff){
+
+        return;
+    }
+
+
+    document.getElementById("staffProfile")
+        .innerHTML = `
+
+        <div class="profile">
+
+            <h3>${staff.name}</h3>
+
+            <p><strong>Staff ID:</strong> ${staff.id}</p>
+
+            <p><strong>Department:</strong> ${staff.department}</p>
+
+            <p><strong>Username:</strong> ${staff.username}</p>
+
+        </div>
+
+        `;
+
+
+    const records =
+        attendance.filter(function(record){
+
+            return record.staffId === staff.id;
+
+        });
+
+
+    let html = `
+
+    <table>
+
+    <tr>
+        <th>Date</th>
+        <th>Check-In</th>
+        <th>Check-Out</th>
+        <th>Status</th>
+    </tr>
+
+    `;
+
+
+    records.forEach(function(record){
+
+        html += `
+
+        <tr>
+
+            <td>${record.date}</td>
+            <td>${record.checkIn}</td>
+            <td>${record.checkOut || "Not checked out"}</td>
+            <td>${record.status}</td>
+
+        </tr>
+
+        `;
+
+    });
+
+
+    html += "</table>";
+
+
+    if(records.length === 0){
+
+        html += "<p>No attendance records yet.</p>";
+
+    }
+
+
+    document.getElementById("myAttendanceTable")
+        .innerHTML = html;
+
+}
+
+
+/* ================================
+   ADMIN CHANGE USERNAME
+================================ */
+
+function changeAdminUsername(){
+
+    if(currentUser.role !== "admin"){
+        return;
+    }
+
+
+    const newUsername =
+        document.getElementById("newAdminUsername")
+        .value.trim();
+
+
+    if(!newUsername){
+
+        showMessage(
+            "settingsMessage",
+            "Enter a new username.",
+            false
+        );
+
+        return;
+    }
+
+
+    if(newUsername === currentUser.username){
+
+        showMessage(
+            "settingsMessage",
+            "The new username is the same as the current username.",
+            false
+        );
+
+        return;
+    }
+
+
+    const usernameExists =
+        users.some(function(user){
+
+            return (
+                user.username === newUsername &&
+                user !== currentUser
+            );
+
+        });
+
+
+    if(usernameExists){
+
+        showMessage(
+            "settingsMessage",
+            "That username is already being used.",
+            false
+        );
+
+        return;
+    }
+
+
+    currentUser.username = newUsername;
+
+
+    const adminUser =
+        users.find(function(user){
+
+            return user.role === "admin";
+
+        });
+
+
+    if(adminUser){
+
+        adminUser.username = newUsername;
+
+    }
+
+
+    saveData();
+
+
+    document.getElementById(
+        "currentAdminUsername"
+    ).value = newUsername;
+
+
+    document.getElementById(
+        "newAdminUsername"
+    ).value = "";
+
+
+    document.getElementById(
+        "welcomeText"
+    ).textContent =
+        "Logged in as: " + newUsername;
+
+
+    showMessage(
+        "settingsMessage",
+        "Admin username changed successfully.",
+        true
+    );
+
+}
+
+
+/* ================================
+   ADMIN CHANGE PASSWORD
+================================ */
+
+function changeAdminPassword(){
+
+    if(currentUser.role !== "admin"){
+        return;
+    }
+
+
+    const currentPassword =
+        document.getElementById("currentAdminPassword")
+        .value;
+
+
+    const newPassword =
+        document.getElementById("newAdminPassword")
+        .value;
+
+
+    const confirmPassword =
+        document.getElementById("confirmAdminPassword")
+        .value;
+
+
+    const adminUser =
+        users.find(function(user){
+
+            return user.role === "admin";
+
+        });
+
+
+    if(!adminUser){
+
+        showMessage(
+            "settingsMessage",
+            "Admin account could not be found.",
+            false
+        );
+
+        return;
+    }
+
+
+    if(adminUser.password !== currentPassword){
+
+        showMessage(
+            "settingsMessage",
+            "Current password is incorrect.",
+            false
+        );
+
+        return;
+    }
+
+
+    if(newPassword.length < 6){
+
+        showMessage(
+            "settingsMessage",
+            "New password must be at least 6 characters.",
+            false
+        );
+
+        return;
+    }
+
+
+    if(newPassword !== confirmPassword){
+
+        showMessage(
+            "settingsMessage",
+            "New passwords do not match.",
+            false
+        );
+
+        return;
+    }
+
+
+    adminUser.password = newPassword;
+
+    currentUser.password = newPassword;
+
+
+    saveData();
+
+
+    document.getElementById(
+        "currentAdminPassword"
+    ).value = "";
+
+    document.getElementById(
+        "newAdminPassword"
+    ).value = "";
+
+    document.getElementById(
+        "confirmAdminPassword"
+    ).value = "";
+
+
+    showMessage(
+        "settingsMessage",
+        "Admin password changed successfully.",
+        true
+    );
+
+}
+
+
+/* ================================
+   CSV EXPORT
+================================ */
+
+function exportCSV(){
+
+    if(attendance.length === 0){
+
+        alert("There are no attendance records to export.");
+
+        return;
+    }
+
+
+    let csv =
+        "Staff Name,Staff ID,Department,Date,Check In,Check Out,Status\n";
+
+
+    attendance.forEach(function(record){
+
+        csv +=
+            `"${record.staffName}",` +
+            `"${record.staffId}",` +
+            `"${record.department}",` +
+            `"${record.date}",` +
+            `"${record.checkIn}",` +
+            `"${record.checkOut}",` +
+            `"${record.status}"\n`;
+
+    });
+
+
+    const blob =
+        new Blob([csv],{
+            type:"text/csv"
+        });
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement("a");
+
+
+    link.href = url;
+
+    link.download =
+        "attendance-report.csv";
+
+
+    link.click();
+
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+/* ================================
+   MESSAGE
+================================ */
+
+function showMessage(
+    id,
+    text,
+    success
+){
+
+    const element =
+        document.getElementById(id);
+
+
+    element.textContent = text;
+
+    element.className =
+        "message " +
+        (success
+            ? "success-message"
+            : "error-message");
+
+
+    element.style.display = "block";
+
+
+    setTimeout(function(){
+
+        element.style.display = "none";
+
+    },5000);
+
+}
+
+
+/* ================================
+   LOGOUT
+================================ */
+
+function logout(){
+
+    currentUser = null;
+
+
+    document.getElementById("systemPage")
+        .classList.add("hidden");
+
+
+    document.getElementById("loginPage")
+        .classList.remove("hidden");
+
+
+    document.getElementById("loginUsername")
+        .value = "";
+
+    document.getElementById("loginPassword")
+        .value = "";
+
+}
+
+
+/* ================================
+   INITIAL SETUP
+================================ */
+
+document.getElementById("reportDate")
+    .value = getDate();
+
+
+document.getElementById("reportMonth")
+    .value = getDate().substring(0,7);
+
+</script>
+
+</body>
+</html>
