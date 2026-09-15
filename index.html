@@ -460,22 +460,374 @@ footer{
     </div>
 
     <div class="role-buttons">
+/* =====================================================
+   BUTTON CONNECTIONS - MOBILE SAFE VERSION
+===================================================== */
 
-      <button
-        id="adminRoleBtn"
-        class="selected"
-        type="button">
-        🔐 Admin
-      </button>
+window.addEventListener("load", function(){
 
-      <button
-        id="staffRoleBtn"
-        type="button">
-        👤 Staff
-      </button>
+  /* ---------- LOGIN ROLE BUTTONS ---------- */
 
-    </div>
+  const adminRoleBtn = document.getElementById("adminRoleBtn");
+  const staffRoleBtn = document.getElementById("staffRoleBtn");
+  const loginButton = document.getElementById("loginButton");
 
+  if(adminRoleBtn){
+    adminRoleBtn.onclick = function(){
+      selectLoginRole("admin");
+    };
+  }
+
+  if(staffRoleBtn){
+    staffRoleBtn.onclick = function(){
+      selectLoginRole("staff");
+    };
+  }
+
+  /* ---------- LOGIN ---------- */
+
+  if(loginButton){
+    loginButton.onclick = function(){
+      login();
+    };
+  }
+
+  /* ---------- SHOW ADMIN PASSWORD ---------- */
+
+  const adminShowPassword =
+    document.getElementById("adminShowPassword");
+
+  if(adminShowPassword){
+    adminShowPassword.onclick = function(){
+      const password =
+        document.getElementById("adminPasswordInput");
+
+      password.type =
+        this.checked ? "text" : "password";
+    };
+  }
+
+  /* ---------- SHOW STAFF PASSWORD ---------- */
+
+  const staffShowPassword =
+    document.getElementById("staffShowPassword");
+
+  if(staffShowPassword){
+    staffShowPassword.onclick = function(){
+      const password =
+        document.getElementById("staffLoginPassword");
+
+      password.type =
+        this.checked ? "text" : "password";
+    };
+  }
+
+  /* ---------- ENTER KEY LOGIN ---------- */
+
+  const loginInputs =
+    document.querySelectorAll("#loginScreen input");
+
+  loginInputs.forEach(function(input){
+
+    input.onkeydown = function(event){
+
+      if(event.key === "Enter"){
+        event.preventDefault();
+        login();
+      }
+
+    };
+
+  });
+
+
+  /* =================================================
+     NAVIGATION
+  ================================================= */
+
+  const dashboardButton =
+    document.getElementById("navDashboard");
+
+  if(dashboardButton){
+    dashboardButton.onclick = function(){
+      showSection("dashboard", this);
+    };
+  }
+
+  document
+    .querySelectorAll("nav button[data-section]")
+    .forEach(function(button){
+
+      button.onclick = function(){
+
+        showSection(
+          this.getAttribute("data-section"),
+          this
+        );
+
+      };
+
+    });
+
+
+  /* ---------- LOGOUT ---------- */
+
+  const logoutButton =
+    document.getElementById("logoutButton");
+
+  if(logoutButton){
+    logoutButton.onclick = function(){
+      logout();
+    };
+  }
+
+
+  /* =================================================
+     CHECK-IN CAMERA
+  ================================================= */
+
+  const startCheckin =
+    document.getElementById("startCheckinCamera");
+
+  if(startCheckin){
+    startCheckin.onclick = function(){
+      startCamera("checkin");
+    };
+  }
+
+  const stopCheckin =
+    document.getElementById("stopCheckinCamera");
+
+  if(stopCheckin){
+    stopCheckin.onclick = function(){
+      stopCamera("checkin");
+    };
+  }
+
+  const scanCheckin =
+    document.getElementById("scanCheckin");
+
+  if(scanCheckin){
+    scanCheckin.onclick = function(){
+      scanFrame("checkin");
+    };
+  }
+
+
+  /* =================================================
+     CHECK-OUT CAMERA
+  ================================================= */
+
+  const startCheckout =
+    document.getElementById("startCheckoutCamera");
+
+  if(startCheckout){
+    startCheckout.onclick = function(){
+      startCamera("checkout");
+    };
+  }
+
+  const stopCheckout =
+    document.getElementById("stopCheckoutCamera");
+
+  if(stopCheckout){
+    stopCheckout.onclick = function(){
+      stopCamera("checkout");
+    };
+  }
+
+  const scanCheckout =
+    document.getElementById("scanCheckout");
+
+  if(scanCheckout){
+    scanCheckout.onclick = function(){
+      scanFrame("checkout");
+    };
+  }
+
+
+  /* =================================================
+     ATTENDANCE
+  ================================================= */
+
+  const manualCheckinButton =
+    document.getElementById("manualCheckinButton");
+
+  if(manualCheckinButton){
+    manualCheckinButton.onclick = function(){
+      manualCheckin();
+    };
+  }
+
+  const manualCheckoutButton =
+    document.getElementById("manualCheckoutButton");
+
+  if(manualCheckoutButton){
+    manualCheckoutButton.onclick = function(){
+      manualCheckout();
+    };
+  }
+
+
+  /* =================================================
+     REPORT
+  ================================================= */
+
+  const refreshReport =
+    document.getElementById("refreshReport");
+
+  if(refreshReport){
+    refreshReport.onclick = function(){
+      renderReport();
+    };
+  }
+
+  const reportDate =
+    document.getElementById("reportDate");
+
+  if(reportDate){
+    reportDate.onchange = function(){
+      renderReport();
+    };
+  }
+
+  const exportCSVButton =
+    document.getElementById("exportCSVButton");
+
+  if(exportCSVButton){
+    exportCSVButton.onclick = function(){
+      exportCSV();
+    };
+  }
+
+
+  /* =================================================
+     HISTORY
+  ================================================= */
+
+  const searchHistory =
+    document.getElementById("searchHistory");
+
+  if(searchHistory){
+    searchHistory.onclick = function(){
+      renderHistory();
+    };
+  }
+
+
+  /* =================================================
+     REGISTER STAFF
+  ================================================= */
+
+  const registerButton =
+    document.getElementById("registerStaffButton");
+
+  if(registerButton){
+    registerButton.onclick = function(){
+      registerStaff();
+    };
+  }
+
+
+  /* =================================================
+     QR CODES
+  ================================================= */
+
+  const generateQRButton =
+    document.getElementById("generateQRButton");
+
+  if(generateQRButton){
+    generateQRButton.onclick = function(){
+      generateAllQR();
+    };
+  }
+
+
+  /* =================================================
+     ADMIN PANEL
+  ================================================= */
+
+  const backupButton =
+    document.getElementById("backupButton");
+
+  if(backupButton){
+    backupButton.onclick = function(){
+      backupDatabase();
+    };
+  }
+
+  const clearAttendanceButton =
+    document.getElementById("clearAttendanceButton");
+
+  if(clearAttendanceButton){
+    clearAttendanceButton.onclick = function(){
+      clearAttendance();
+    };
+  }
+
+  const resetDatabaseButton =
+    document.getElementById("resetDatabaseButton");
+
+  if(resetDatabaseButton){
+    resetDatabaseButton.onclick = function(){
+      resetDatabase();
+    };
+  }
+
+
+  /* =================================================
+     ADMIN SETTINGS
+  ================================================= */
+
+  const saveSettingsButton =
+    document.getElementById("saveSettingsButton");
+
+  if(saveSettingsButton){
+    saveSettingsButton.onclick = function(){
+      saveAdminSettings();
+    };
+  }
+
+
+  /* =================================================
+     DEFAULT DATES
+  ================================================= */
+
+  if(reportDate){
+    reportDate.value = today();
+  }
+
+  const historyTo =
+    document.getElementById("historyTo");
+
+  if(historyTo){
+    historyTo.value = today();
+  }
+
+  const historyFrom =
+    document.getElementById("historyFrom");
+
+  if(historyFrom){
+
+    const d = new Date();
+
+    d.setDate(d.getDate() - 7);
+
+    historyFrom.value =
+      d.getFullYear() + "-" +
+      String(d.getMonth()+1).padStart(2,"0") + "-" +
+      String(d.getDate()).padStart(2,"0");
+  }
+
+
+  /* =================================================
+     START LOGIN ON ADMIN
+  ================================================= */
+
+  selectLoginRole("admin");
+  applyCompanySettings();
+
+});
     <!-- ADMIN -->
 
     <div id="adminLoginFields">
