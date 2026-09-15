@@ -1,1 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Attendance System</title>
 
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  min-height:100%;
+  font-family:Arial,sans-serif;
+  background:#f2f5f9;
+  color:#222;
+}
+
+button{
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+.hidden{display:none!important}
+
+/* LOGIN */
+#loginScreen{
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  background:linear-gradient(135deg,#123c69,#1d6fa5);
+}
+
+.login-box{
+  width:100%;
+  max-width:430px;
+  background:#fff;
+  border-radius:18px;
+  padding:30px;
+  box-shadow:0 10px 35px rgba(0,0,0,.25);
+}
+
+.login-logo{
+  text-align:center;
+  font-size:45px;
+  margin-bottom:10px;
+}
+
+.login-box h1{
+  text-align:center;
+  color:#123c69;
+  margin:5px 0;
+}
+
+.login-subtitle{
+  text-align:center;
+  color:#666;
+  margin-bottom:25px;
+}
+
+.role-buttons{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.role-buttons button{
+  flex:1;
+  padding:14px 10px;
+  border:2px solid #ddd;
+  border-radius:8px;
+  background:#fff;
+  font-weight:bold;
+  font-size:16px;
+}
+
+.role-buttons button.selected{
+  background:#123c69;
+  color:#fff;
+  border-color:#123c69;
+}
+
+.input-group{
+  margin-bottom:16px;
+}
+
+.input-group label{
+  display:block;
+  font-weight:bold;
+  margin-bottom:6px;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  font-size:16px;
+}
+
+.login-button{
+  display:block;
+  width:100%;
+  padding:15px;
+  margin-top:5px;
+  border:0;
+  border-radius:8px;
+  background:#123c69;
+  color:#fff;
+  font-size:18px;
+  font-weight:bold;
+  min-height:52px;
+}
+
+.login-button:active{
+  transform:scale(.98);
+  background:#0d2f52;
+}
+
+.password-row{
+  display:flex;
+  gap:8px;
+}
+
+.password-row input{flex:1}
+
+.show-password{
+  display:flex!important;
+  align-items:center;
+  gap:5px;
+  font-size:13px!important;
+  font-weight:normal!important;
+  margin-top:6px;
+}
+
+.show-password input{
+  width:auto!important;
+}
+
+.login-help{
+  text-align:center;
+  margin-top:18px;
+  font-size:13px;
+  color:#777;
+}
+
+/* APP */
+header{
+  background:#123c69;
+  color:#fff;
+  padding:18px 20px;
+}
+
+.header-content{
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+}
+
+header h1{
+  margin:0;
+  font-size:24px;
+}
+
+header p{
+  margin:5px 0 0;
+  opacity:.9;
+}
+
+.user-info{text-align:right}
+
+.user-info strong{display:block}
+
+nav{
+  background:#fff;
+  border-bottom:1px solid #ddd;
+  overflow-x:auto;
+  white-space:nowrap;
+}
+
+.nav-inner{
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+}
+
+nav button{
+  border:0;
+  background:#fff;
+  padding:14px 15px;
+  font-weight:bold;
+  color:#123c69;
+}
+
+nav button:hover,
+nav button.active{
+  background:#123c69;
+  color:#fff;
+}
+
+main{
+  max-width:1200px;
+  margin:25px auto;
+  padding:0 15px;
+}
+
+.section{display:none}
+
+.section.active{display:block}
+
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  margin-bottom:20px;
+}
+
+.card h2,
+.card h3{
+  margin-top:0;
+  color:#123c69;
+}
+
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+}
+
+.stat-card{
+  background:#fff;
+  border-radius:12px;
+  padding:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.stat-card h3{
+  margin:0;
+  color:#666;
+  font-size:14px;
+}
+
+.stat-number{
+  font-size:32px;
+  font-weight:bold;
+  color:#123c69;
+  margin-top:10px;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+
+.full{grid-column:1/-1}
+
+.primary-btn,
+.success-btn,
+.danger-btn,
+.secondary-btn{
+  border:0;
+  padding:11px 16px;
+  border-radius:7px;
+  font-weight:bold;
+  margin:4px;
+}
+
+.primary-btn{background:#123c69;color:#fff}
+.success-btn{background:#198754;color:#fff}
+.danger-btn{background:#dc3545;color:#fff}
+.secondary-btn{background:#6c757d;color:#fff}
+
+.video-box{
+  width:100%;
+  max-width:500px;
+  margin:auto;
+  background:#111;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+video{
+  width:100%;
+  display:block;
+}
+
+.qr-result{
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+  padding:15px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+}
+
+th,td{
+  padding:10px;
+  border:1px solid #ddd;
+  text-align:left;
+}
+
+th{
+  background:#123c69;
+  color:#fff;
+}
+
+.table-container{overflow-x:auto}
+
+.alert{
+  padding:12px;
+  border-radius:8px;
+  margin:10px 0;
+}
+
+.alert-success{
+  background:#d1e7dd;
+  color:#0f5132;
+}
+
+.alert-error{
+  background:#f8d7da;
+  color:#842029;
+}
+
+.alert-warning{
+  background:#fff3cd;
+  color:#664d03;
+}
+
+.qr-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+
+.qr-card{
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:10px;
+  padding:15px;
+  text-align:center;
+}
+
+.qr-card canvas{
+  max-width:180px;
+  width:100%;
+  height:auto;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:5px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.badge-present{
+  background:#d1e7dd;
+  color:#0f5132;
+}
+
+.badge-late{
+  background:#fff3cd;
+  color:#664d03;
+}
+
+.badge-absent{
+  background:#f8d7da;
+  color:#842029;
+}
+
+.badge-out{
+  background:#cfe2ff;
+  color:#084298;
+}
+
+footer{
+  text-align:center;
+  color:#777;
+  padding:30px 15px;
+}
+
+/* MOBILE */
+@media(max-width:800px){
+  .dashboard-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .qr-grid{
+    grid-template-columns:1fr;
+  }
+
+  .header-content{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .user-info{text-align:left}
+}
+
+@media(max-width:600px){
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .dashboard-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .login-box{
+    padding:22px;
+  }
+
+  header h1{
+    font-size:20px;
+  }
+
+  .login-button{
+    min-height:55px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= LOGIN ================= -->
+
+<div id="loginScreen">
+
+  <div class="login-box">
+
+    <div class="login-logo">🏢</div>
+
+    <h1 id="loginCompanyName">Staff Attendance System</h1>
+
+    <div class="login-subtitle">
+      Secure Staff Attendance Management
+    </div>
+
+    <div class="role-buttons">
+
+      <button
+        id="adminRoleBtn"
+        class="selected"
+        type="button">
+        🔐 Admin
+      </button>
+
+      <button
+        id="staffRoleBtn"
+        type="button">
+        👤 Staff
+      </button>
+
+    </div>
+
+    <!-- ADMIN -->
+
+    <div id="adminLoginFields">
+
+      <div class="input-group">
+        <label>Admin Username</label>
+
+        <input
+          id="adminUsernameInput"
+          type="text"
+          autocomplete="username"
+          placeholder="Enter admin username">
+      </div>
+
+      <div class="input-group">
+
+        <label>Admin Password</label>
+
+        <input
+          id="adminPasswordInput"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter admin password">
+
+        <label class="show-password">
+          <input
+            id="adminShowPassword"
+            type="checkbox">
+          Show password
+        </label>
+
+      </div>
+
+    </div>
+
+    <!-- STAFF -->
+
+    <div id="staffLoginFields" class="hidden">
+
+      <div class="input-group">
+
+        <label>Staff ID</label>
+
+        <input
+          id="staffLoginId"
+          type="text"
+          autocomplete="username"
+          placeholder="Enter Staff ID">
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Staff Password</label>
+
+        <input
+          id="staffLoginPassword"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter password">
+
+        <label class="show-password">
+          <input
+            id="staffShowPassword"
+            type="checkbox">
+          Show password
+        </label>
+
+      </div>
+
+    </div>
+
+    <div id="loginMessage"></div>
+
+    <!-- IMPORTANT: NO INLINE ONCLICK -->
+    <button
+      id="loginButton"
+      class="login-button"
+      type="button">
+      LOGIN
+    </button>
+
+    <div class="login-help">
+      Staff must use the Staff ID and password given by the administrator.
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ================= MAIN APP ================= -->
+
+<div id="app" style="display:none;">
+
+<header>
+
+  <div class="header-content">
+
+    <div>
+
+      <h1 id="companyNameDisplay">
+        Staff Attendance System
+      </h1>
+
+      <p id="companyTagline">
+        Professional Attendance Tracking & Management with QR Code Scanning
+      </p>
+
+    </div>
+
+    <div class="user-info">
+
+      <strong id="welcomeUser">Welcome</strong>
+
+      <span id="userRoleDisplay"></span>
+
+    </div>
+
+  </div>
+
+</header>
+
+
+<nav>
+
+  <div class="nav-inner">
+
+    <button id="navDashboard">Dashboard</button>
+
+    <button data-section="checkin">QR Check-In</button>
+
+    <button data-section="checkout">QR Check-Out</button>
+
+    <button id="navReport" data-section="report">Daily Report</button>
+
+    <button id="navHistory" data-section="history">History</button>
+
+    <button id="navRegister" data-section="register">Register Staff</button>
+
+    <button id="navQR" data-section="staffQR">Staff QR Codes</button>
+
+    <button id="navAdmin" data-section="admin">Admin Panel</button>
+
+    <button id="navSettings" data-section="settings">Admin Settings</button>
+
+    <button id="logoutButton">Logout</button>
+
+  </div>
+
+</nav>
+
+
+<main>
+
+<!-- DASHBOARD -->
+
+<section id="dashboard" class="section">
+
+  <div class="card">
+    <h2>Dashboard</h2>
+    <p id="dashboardDate"></p>
+  </div>
+
+  <div class="dashboard-grid">
+
+    <div class="stat-card">
+      <h3>Total Staff</h3>
+      <div class="stat-number" id="totalStaff">0</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Present Today</h3>
+      <div class="stat-number" id="totalPresent">0</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Late Arrivals</h3>
+      <div class="stat-number" id="totalLate">0</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Checked Out</h3>
+      <div class="stat-number" id="totalCheckedOut">0</div>
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Today's Attendance</h3>
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Staff ID</th>
+            <th>Name</th>
+            <th>Check-In</th>
+            <th>Status</th>
+            <th>Check-Out</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="dashboardTableBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- CHECK IN -->
+
+<section id="checkin" class="section">
+
+  <div class="card">
+
+    <h2>Staff Check-In</h2>
+
+    <div class="video-box">
+      <video id="checkinVideo" autoplay playsinline></video>
+    </div>
+
+    <br>
+
+    <button class="primary-btn" id="startCheckinCamera">
+      Start Camera
+    </button>
+
+    <button class="secondary-btn" id="stopCheckinCamera">
+      Stop Camera
+    </button>
+
+    <button class="primary-btn" id="scanCheckin">
+      Scan QR
+    </button>
+
+    <div id="checkinQRResult" class="qr-result">
+      Camera ready.
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Manual Check-In</h3>
+
+    <div class="input-group">
+
+      <label>Select Staff</label>
+
+      <select id="manualCheckinStaff">
+        <option value="">-- Select Staff --</option>
+      </select>
+
+    </div>
+
+    <button class="success-btn" id="manualCheckinButton">
+      Record Check-In
+    </button>
+
+    <div id="manualCheckinMessage"></div>
+
+  </div>
+
+</section>
+
+
+<!-- CHECK OUT -->
+
+<section id="checkout" class="section">
+
+  <div class="card">
+
+    <h2>Staff Check-Out</h2>
+
+    <div class="video-box">
+      <video id="checkoutVideo" autoplay playsinline></video>
+    </div>
+
+    <br>
+
+    <button class="primary-btn" id="startCheckoutCamera">
+      Start Camera
+    </button>
+
+    <button class="secondary-btn" id="stopCheckoutCamera">
+      Stop Camera
+    </button>
+
+    <button class="primary-btn" id="scanCheckout">
+      Scan QR
+    </button>
+
+    <div id="checkoutQRResult" class="qr-result">
+      Camera ready.
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Manual Check-Out</h3>
+
+    <div class="input-group">
+
+      <label>Staff ID</label>
+
+      <input
+        id="manualCheckoutID"
+        type="text"
+        placeholder="Enter Staff ID">
+
+    </div>
+
+    <button class="success-btn" id="manualCheckoutButton">
+      Record Check-Out
+    </button>
+
+    <div id="manualCheckoutMessage"></div>
+
+  </div>
+
+</section>
+
+
+<!-- REPORT -->
+
+<section id="report" class="section">
+
+  <div class="card">
+
+    <h2>Daily Staff Report</h2>
+
+    <div class="form-grid">
+
+      <div class="input-group">
+
+        <label>Date</label>
+
+        <input
+          id="reportDate"
+          type="date">
+
+      </div>
+
+    </div>
+
+    <button class="primary-btn" id="refreshReport">
+      Refresh Report
+    </button>
+
+    <button class="success-btn" id="exportCSVButton">
+      Export CSV
+    </button>
+
+  </div>
+
+  <div class="dashboard-grid">
+
+    <div class="stat-card">
+      <h3>Total Present</h3>
+      <div class="stat-number" id="reportPresent">0</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Late Arrivals</h3>
+      <div class="stat-number" id="reportLate">0</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Absent</h3>
+      <div class="stat-number" id="reportAbsent">0</div>
+    </div>
+
+    <div class="stat-card">
+      <h3>Checked Out</h3>
+      <div class="stat-number" id="reportCheckedOut">0</div>
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Date</th>
+            <th>Staff ID</th>
+            <th>Name</th>
+            <th>Check-In</th>
+            <th>Status</th>
+            <th>Check-Out</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="reportTableBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- HISTORY -->
+
+<section id="history" class="section">
+
+  <div class="card">
+
+    <h2>Attendance History</h2>
+
+    <div class="form-grid">
+
+      <div class="input-group">
+        <label>From Date</label>
+        <input id="historyFrom" type="date">
+      </div>
+
+      <div class="input-group">
+        <label>To Date</label>
+        <input id="historyTo" type="date">
+      </div>
+
+    </div>
+
+    <button class="primary-btn" id="searchHistory">
+      Search History
+    </button>
+
+  </div>
+
+  <div class="card">
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Date</th>
+            <th>Staff ID</th>
+            <th>Name</th>
+            <th>Check-In</th>
+            <th>Status</th>
+            <th>Check-Out</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="historyTableBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- REGISTER -->
+
+<section id="register" class="section">
+
+  <div class="card">
+
+    <h2>Register Staff</h2>
+
+    <div id="registerMessage"></div>
+
+    <div class="form-grid">
+
+      <div class="input-group">
+        <label>Staff Name</label>
+        <input id="staffName" type="text">
+      </div>
+
+      <div class="input-group">
+        <label>Staff ID</label>
+        <input id="staffID" type="text">
+      </div>
+
+      <div class="input-group">
+        <label>Department</label>
+        <input id="staffDepartment" type="text">
+      </div>
+
+      <div class="input-group">
+        <label>Email</label>
+        <input id="staffEmail" type="email">
+      </div>
+
+      <div class="input-group">
+        <label>Staff Password</label>
+        <input id="staffPassword" type="password">
+      </div>
+
+      <div class="input-group">
+        <label>Expected Check-In Time</label>
+        <input id="staffExpectedTime" type="time" value="09:00">
+      </div>
+
+    </div>
+
+    <button class="success-btn" id="registerStaffButton">
+      Register Staff
+    </button>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Registered Staff</h3>
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Staff ID</th>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Email</th>
+            <th>Expected Time</th>
+            <th>Action</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="staffTableBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- QR -->
+
+<section id="staffQR" class="section">
+
+  <div class="card">
+
+    <h2>Staff QR Codes</h2>
+
+    <p>
+      Each staff member has a personal QR code.
+      The QR code contains the Staff ID.
+    </p>
+
+    <button class="primary-btn" id="generateQRButton">
+      Generate QR Codes
+    </button>
+
+  </div>
+
+  <div id="qrGrid" class="qr-grid"></div>
+
+</section>
+
+
+<!-- ADMIN -->
+
+<section id="admin" class="section">
+
+  <div class="card">
+
+    <h2>Admin Panel</h2>
+
+    <h3>System Statistics</h3>
+
+    <p>
+      Total Staff:
+      <strong id="adminTotalStaff">0</strong>
+    </p>
+
+    <p>
+      Total Attendance Records:
+      <strong id="adminTotalAttendance">0</strong>
+    </p>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Database Management</h3>
+
+    <button class="success-btn" id="backupButton">
+      Backup Data
+    </button>
+
+    <button class="danger-btn" id="clearAttendanceButton">
+      Clear Attendance
+    </button>
+
+    <button class="danger-btn" id="resetDatabaseButton">
+      Reset Database
+    </button>
+
+    <div id="adminMessage"></div>
+
+  </div>
+
+</section>
+
+
+<!-- SETTINGS -->
+
+<section id="settings" class="section">
+
+  <div class="card">
+
+    <h2>Admin Settings</h2>
+
+    <div id="settingsMessage"></div>
+
+    <div class="form-grid">
+
+      <div class="input-group">
+
+        <label>Admin Username</label>
+
+        <input id="newAdminUsername" type="text">
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Admin Password</label>
+
+        <input id="newAdminPassword" type="password">
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Company Name</label>
+
+        <input id="companyNameInput" type="text">
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Company Tagline</label>
+
+        <input id="companyTaglineInput" type="text">
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Work Start Time</label>
+
+        <input id="startTimeInput" type="time">
+
+      </div>
+
+      <div class="input-group">
+
+        <label>Late Threshold (minutes)</label>
+
+        <input id="lateThresholdInput" type="number" min="0">
+
+      </div>
+
+    </div>
+
+    <button class="success-btn" id="saveSettingsButton">
+      Save Settings
+    </button>
+
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+Staff Attendance System © 2026
+</footer>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+DATABASE
+===================================================== */
+
+const DB_KEY="staffAttendanceSystemDB_v4";
+
+function createDefaultDB(){
+
+  return {
+    settings:{
+      adminUsername:"admin",
+      adminPassword:"admin123",
+      companyName:"Staff Attendance System",
+      companyTagline:
+        "Professional Attendance Tracking & Management with QR Code Scanning",
+      startTime:"09:00",
+      lateThreshold:15
+    },
+    staff:[],
+    attendance:[]
+  };
+
+}
+
+function loadDB(){
+
+  try{
+
+    const raw=localStorage.getItem(DB_KEY);
+
+    if(!raw){
+      return createDefaultDB();
+    }
+
+    const parsed=JSON.parse(raw);
+
+    if(!parsed || typeof parsed!=="object"){
+      return createDefaultDB();
+    }
+
+    const defaults=createDefaultDB();
+
+    parsed.settings={
+      ...defaults.settings,
+      ...(parsed.settings || {})
+    };
+
+    parsed.staff=
+      Array.isArray(parsed.staff)
+      ? parsed.staff
+      : [];
+
+    parsed.attendance=
+      Array.isArray(parsed.attendance)
+      ? parsed.attendan
