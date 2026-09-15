@@ -1,1 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Attendance System</title>
 
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f5f9;
+    color: #222;
+}
+
+header {
+    background: #123c69;
+    color: white;
+    padding: 18px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 25px;
+}
+
+header p {
+    margin: 7px 0 0;
+    font-size: 14px;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+nav button {
+    flex: 1;
+    min-width: 110px;
+    padding: 11px 8px;
+    border: none;
+    border-radius: 7px;
+    background: #e7edf4;
+    color: #123c69;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+nav button.active {
+    background: #123c69;
+    color: white;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 18px;
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+}
+
+.card h2,
+.card h3 {
+    color: #123c69;
+    margin-top: 0;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0 12px;
+    border: 1px solid #ccd5df;
+    border-radius: 7px;
+    font-size: 15px;
+}
+
+button {
+    cursor: pointer;
+}
+
+.primary {
+    background: #123c69;
+    color: white;
+    border: none;
+    padding: 12px 17px;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+.success {
+    background: #198754;
+    color: white;
+    border: none;
+    padding: 12px 17px;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+.danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px 17px;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+.warning {
+    background: #f0ad4e;
+    color: white;
+    border: none;
+    padding: 12px 17px;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+.secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 17px;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: .9;
+}
+
+.video-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+    background: #111;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+video {
+    width: 100%;
+    display: block;
+}
+
+canvas {
+    display: none;
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.stat {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,.07);
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: #123c69;
+}
+
+.stat-label {
+    color: #555;
+    margin-top: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    background: white;
+}
+
+th,
+td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    font-size: 14px;
+}
+
+th {
+    background: #123c69;
+    color: white;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.present {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.late {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.absent {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.checkedout {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #123c69;
+}
+
+.login-box {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+
+.login-box h1 {
+    color: #123c69;
+    text-align: center;
+}
+
+.role-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.role-buttons button {
+    flex: 1;
+    padding: 11px;
+    border: none;
+    border-radius: 7px;
+    background: #e7edf4;
+    font-weight: bold;
+}
+
+.role-buttons button.selected {
+    background: #123c69;
+    color: white;
+}
+
+#app {
+    display: none;
+}
+
+.welcome {
+    background: #123c69;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+}
+
+.qr-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 15px;
+}
+
+.qr-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.qr-card canvas {
+    display: block;
+    margin: 10px auto;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.small {
+    font-size: 13px;
+    color: #666;
+}
+
+.alert {
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.alert-success {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.alert-info {
+    background: #cff4fc;
+    color: #055160;
+}
+
+.logo-preview {
+    max-width: 100px;
+    max-height: 100px;
+    display: block;
+    margin: 10px auto;
+}
+
+footer {
+    text-align: center;
+    color: #777;
+    padding: 25px;
+    font-size: 13px;
+}
+
+@media(max-width: 700px) {
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    nav button {
+        min-width: 90px;
+        font-size: 12px;
+    }
+
+    header h1 {
+        font-size: 21px;
+    }
+
+    .button-row button {
+        width: 100%;
+    }
+}
+
+@media(max-width: 420px) {
+    .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .stat {
+        padding: 13px 7px;
+    }
+
+    .stat-number {
+        font-size: 23px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="login-screen">
+
+    <div class="login-box">
+
+        <h1 id="loginCompanyName">Staff Attendance System</h1>
+
+        <p style="text-align:center;">
+            Secure Staff & Admin Login
+        </p>
+
+        <div class="role-buttons">
+            <button id="adminRoleBtn" class="selected" onclick="selectLoginRole('admin')">
+                Admin
+            </button>
+
+            <button id="staffRoleBtn" onclick="selectLoginRole('staff')">
+                Staff
+            </button>
+        </div>
+
+        <div id="adminLoginFields">
+
+            <label>Admin Username</label>
+            <input
+                type="text"
+                id="adminUsernameInput"
+                placeholder="Enter admin username"
+            >
+
+            <label>Admin Password</label>
+            <input
+                type="password"
+                id="adminPasswordInput"
+                placeholder="Enter admin password"
+            >
+
+        </div>
+
+        <div id="staffLoginFields" class="hidden">
+
+            <label>Staff ID</label>
+            <input
+                type="text"
+                id="staffLoginId"
+                placeholder="Enter staff ID"
+            >
+
+            <label>Password</label>
+            <input
+                type="password"
+                id="staffLoginPassword"
+                placeholder="Enter staff password"
+            >
+
+        </div>
+
+        <button class="primary" style="width:100%;" onclick="login()">
+            Login
+        </button>
+
+        <div id="loginMessage"></div>
+
+        <p class="small" style="text-align:center;margin-top:18px;">
+            Staff must receive their login details from the administrator.
+        </p>
+
+    </div>
+</div>
+
+
+<!-- MAIN APP -->
+<div id="app">
+
+<header>
+    <h1 id="companyNameDisplay">Staff Attendance System</h1>
+    <p id="companyTagline">
+        Professional Attendance Tracking & Management with QR Code Scanning
+    </p>
+</header>
+
+<nav>
+
+    <button id="navDashboard" onclick="showSection('dashboard')">
+        Dashboard
+    </button>
+
+    <button id="navCheckin" onclick="showSection('checkin')">
+        QR Check-In
+    </button>
+
+    <button id="navCheckout" onclick="showSection('checkout')">
+        QR Check-Out
+    </button>
+
+    <button id="navReport" onclick="showSection('report')">
+        Daily Report
+    </button>
+
+    <button id="navHistory" onclick="showSection('history')">
+        History
+    </button>
+
+    <button id="navRegister" onclick="showSection('register')">
+        Register Staff
+    </button>
+
+    <button id="navQR" onclick="showSection('qr')">
+        Staff QR Codes
+    </button>
+
+    <button id="navAdmin" onclick="showSection('admin')">
+        Admin Panel
+    </button>
+
+    <button id="navSettings" onclick="showSection('settings')">
+        Admin Settings
+    </button>
+
+    <button onclick="logout()">
+        Logout
+    </button>
+
+</nav>
+
+
+<div class="container">
+
+<div id="welcomeMessage" class="welcome">
+    Welcome.
+</div>
+
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="section">
+
+    <div class="card">
+        <h2>Attendance Dashboard</h2>
+        <p id="dashboardDate"></p>
+    </div>
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="stat-number" id="dashTotalStaff">0</div>
+            <div class="stat-label">Total Staff</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number" id="dashPresent">0</div>
+            <div class="stat-label">Present</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number" id="dashLate">0</div>
+            <div class="stat-label">Late</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number" id="dashAbsent">0</div>
+            <div class="stat-label">Absent</div>
+        </div>
+
+    </div>
+
+    <div class="stats" style="margin-top:12px;">
+
+        <div class="stat">
+            <div class="stat-number" id="dashCheckedOut">0</div>
+            <div class="stat-label">Checked Out</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number" id="dashNotCheckedOut">0</div>
+            <div class="stat-label">Still Working</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number" id="dashAttendanceRate">0%</div>
+            <div class="stat-label">Attendance Rate</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number" id="dashDepartments">0</div>
+            <div class="stat-label">Departments</div>
+        </div>
+
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+        <h3>Today's Attendance</h3>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Staff</th>
+                        <th>ID</th>
+                        <th>Department</th>
+                        <th>Check-In</th>
+                        <th>Check-Out</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="dashboardTable">
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</section>
+
+
+<!-- CHECK IN -->
+<section id="checkin" class="section">
+
+    <div class="card">
+
+        <h2>Staff Attendance — Check-In</h2>
+
+        <p>
+            Scan the staff member's personal QR code or use manual check-in.
+        </p>
+
+        <div class="video-box">
+            <video id="checkinVideo" autoplay playsinline></video>
+        </div>
+
+        <canvas id="checkinCanvas"></canvas>
+
+        <div class="button-row">
+
+            <button class="primary" onclick="startScanner('checkin')">
+                Start Camera
+            </button>
+
+            <button class="secondary" onclick="stopScanner('checkin')">
+                Stop Camera
+            </button>
+
+        </div>
+
+        <p id="checkinScanMessage"></p>
+
+        <hr>
+
+        <h3>Manual Check-In</h3>
+
+        <label>Staff</label>
+
+        <select id="manualCheckinStaff">
+            <option value="">Select Staff</option>
+        </select>
+
+        <button class="success" onclick="manualCheckin()">
+            Check In Staff
+        </button>
+
+        <div id="checkinResult"></div>
+
+    </div>
+
+</section>
+
+
+<!-- CHECK OUT -->
+<section id="checkout" class="section">
+
+    <div class="card">
+
+        <h2>Staff Attendance — Check-Out</h2>
+
+        <p>
+            Scan the staff member's QR code or enter the Staff ID manually.
+        </p>
+
+        <div class="video-box">
+            <video id="checkoutVideo" autoplay playsinline></video>
+        </div>
+
+        <canvas id="checkoutCanvas"></canvas>
+
+        <div class="button-row">
+
+            <button class="primary" onclick="startScanner('checkout')">
+                Start Camera
+            </button>
+
+            <button class="secondary" onclick="stopScanner('checkout')">
+                Stop Camera
+            </button>
+
+        </div>
+
+        <p id="checkoutScanMessage"></p>
+
+        <hr>
+
+        <h3>Manual Check-Out</h3>
+
+        <label>Staff ID</label>
+
+        <input
+            type="text"
+            id="manualCheckoutId"
+            placeholder="Example: ST001"
+        >
+
+        <button class="success" onclick="manualCheckout()">
+            Check Out Staff
+        </button>
+
+        <div id="checkoutResult"></div>
+
+    </div>
+
+</section>
+
+
+<!-- DAILY REPORT -->
+<section id="report" class="section">
+
+    <div class="card">
+
+        <h2>Daily Staff Report</h2>
+
+        <label>Select Date</label>
+
+        <input
+            type="date"
+            id="reportDate"
+            onchange="generateDailyReport()"
+        >
+
+        <div class="button-row">
+
+            <button class="primary" onclick="generateDailyReport()">
+                Refresh Report
+            </button>
+
+            <button class="success" onclick="exportCurrentReport()">
+                Export CSV
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="stat-number" id="reportTotal">0</div>
+            <div class="stat-label">Total Staff</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number" id="reportPresent">0</div>
+            <div class="stat-label">Present</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number" id="reportLate">0</div>
+            <div class="stat-label">Late</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-number" id="reportAbsent">0</div>
+            <div class="stat-label">Absent</div>
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Staff</th>
+                        <th>ID</th>
+                        <th>Department</th>
+                        <th>Check-In</th>
+                        <th>Check-Out</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reportTable">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- HISTORY -->
+<section id="history" class="section">
+
+    <div class="card">
+
+        <h2>Attendance History</h2>
+
+        <label>From</label>
+        <input type="date" id="historyFrom">
+
+        <label>To</label>
+        <input type="date" id="historyTo">
+
+        <label>Staff ID — optional</label>
+        <input
+            type="text"
+            id="historyStaffId"
+            placeholder="Leave empty for everyone"
+        >
+
+        <button class="primary" onclick="loadHistory()">
+            Search History
+        </button>
+
+        <button class="success" onclick="exportHistory()">
+            Export CSV
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Staff</th>
+                        <th>ID</th>
+                        <th>Department</th>
+                        <th>Check-In</th>
+                        <th>Check-Out</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyTable">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- REGISTER STAFF -->
+<section id="register" class="section">
+
+    <div class="card">
+
+        <h2>Register Staff</h2>
+
+        <label>Full Name</label>
+
+        <input
+            type="text"
+            id="staffName"
+            placeholder="Full name"
+        >
+
+        <label>Staff ID</label>
+
+        <input
+            type="text"
+            id="staffId"
+            placeholder="Example: ST001"
+        >
+
+        <label>Department</label>
+
+        <input
+            type="text"
+            id="staffDepartment"
+            placeholder="Example: Sales"
+        >
+
+        <label>Email</label>
+
+        <input
+            type="email"
+            id="staffEmail"
+            placeholder="staff@example.com"
+        >
+
+        <label>Expected Check-In Time</label>
+
+        <input
+            type="time"
+            id="expectedCheckin"
+            value="09:00"
+        >
+
+        <label>Staff Password</label>
+
+        <input
+            type="password"
+            id="staffPassword"
+            placeholder="Create staff password"
+        >
+
+        <label>Confirm Staff Password</label>
+
+        <input
+            type="password"
+            id="staffPasswordConfirm"
+            placeholder="Confirm password"
+        >
+
+        <button class="success" onclick="registerStaff()">
+            Register Staff
+        </button>
+
+        <div id="registerResult"></div>
+
+    </div>
+
+</section>
+
+
+<!-- STAFF QR CODES -->
+<section id="qr" class="section">
+
+    <div class="card">
+
+        <h2>Staff QR Codes</h2>
+
+        <p>
+            Each staff member has an individual QR code containing their Staff ID.
+        </p>
+
+        <button class="primary" onclick="generateAllQR()">
+            Generate QR Codes
+        </button>
+
+    </div>
+
+    <div id="qrList" class="qr-list"></div>
+
+</section>
+
+
+<!-- ADMIN PANEL -->
+<section id="admin" class="section">
+
+    <div class="card">
+
+        <h2>Admin Panel</h2>
+
+        <div class="stats">
+
+            <div class="stat">
+                <div class="stat-number" id="adminStaffCount">0</div>
+                <div class="stat-label">Registered Staff</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-number" id="adminRecordsCount">0</div>
+                <div class="stat-label">Attendance Records</div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Staff Management</h3>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Staff ID</th>
+                        <th>Department</th>
+                        <th>Email</th>
+                        <th>Expected Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="staffTable">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Database Tools</h3>
+
+        <div class="button-row">
+
+            <button class="success" onclick="backupData()">
+                Backup Data
+            </button>
+
+            <button class="warning" onclick="restoreData()">
+                Restore Backup
+            </button>
+
+            <button class="danger" onclick="clearAttendance()">
+                Clear Attendance Records
+            </button>
+
+            <button class="danger" onclick="resetDatabase()">
+                Reset
