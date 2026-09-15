@@ -1033,7 +1033,7 @@ footer {
 
     <div class="card">
 
-        <h3>Database Toolbutton.selected0s</h3>
+        <h3>Database Tools</h3>
 
         <div class="button-row">
 
@@ -1050,5 +1050,2387 @@ footer {
             </button>
 
             <button class="danger" onclick="resetDatabase()">
-                Reset
-button.activebutton.activebutton.activebutton.selected
+                Reset Entire Database
+            </button>
+
+        </div>
+
+        <input
+            type="file"
+            id="restoreFile"
+            accept=".json"
+            class="hidden"
+            onchange="processRestore(event)"
+        >
+
+    </div>
+
+</section>
+
+
+<!-- ADMIN SETTINGS -->
+<section id="settings" class="section">
+
+    <div class="card">
+
+        <h2>Admin Settings</h2>
+
+        <h3>Change Admin Login</h3>
+
+        <label>New Admin Username</label>
+
+        <input
+            type="text"
+            id="newAdminUsername"
+            placeholder="New username"
+        >
+
+        <label>Current Password</label>
+
+        <input
+            type="password"
+            id="currentAdminPassword"
+            placeholder="Current password"
+        >
+
+        <label>New Password</label>
+
+        <input
+            type="password"
+            id="newAdminPassword"
+            placeholder="New password"
+        >
+
+        <label>Confirm New Password</label>
+
+        <input
+            type="password"
+            id="confirmAdminPassword"
+            placeholder="Confirm new password"
+        >
+
+        <button class="primary" onclick="changeAdminCredentials()">
+            Save Admin Settings
+        </button>
+
+        <div id="settingsResult"></div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Company Settings</h3>
+
+        <label>Company Name</label>
+
+        <input
+            type="text"
+            id="companyNameInput"
+            placeholder="Company name"
+        >
+
+        <label>Company Tagline</label>
+
+        <input
+            type="text"
+            id="companyTaglineInput"
+            placeholder="Company tagline"
+        >
+
+        <label>Working Start Time</label>
+
+        <input
+            type="time"
+            id="companyStartTime"
+            value="09:00"
+        >
+
+        <label>Late Threshold (minutes)</label>
+
+        <input
+            type="number"
+            id="lateThreshold"
+            value="15"
+            min="0"
+        >
+
+        <button class="success" onclick="saveCompanySettings()">
+            Save Company Settings
+        </button>
+
+        <div id="companySettingsResult"></div>
+
+    </div>
+
+</section>
+
+</div>
+
+<footer>
+    Staff Attendance System © 2026
+</footer>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   DATABASE
+========================================================= */
+
+const DB_KEY = "staffAttendanceSystemDB_v3";
+
+let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
+
+    settings: {
+        adminUsername: "admin",
+        adminPassword: "admin123",
+        companyName: "Staff Attendance System",
+        companyTagline:
+            "Professional Attendance Tracking & Management with QR Code Scanning",
+        startTime: "09:00",
+        lateThreshold: 15
+    },
+
+    staff: [],
+
+    attendance: []
+
+};
+
+function saveDB() {
+
+    localStorage.setItem(
+        DB_KEY,
+        JSON.stringify(db)
+    );
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+let loginRole = "admin";
+let currentUser = null;
+
+function selectLoginRole(role) {
+
+    loginRole = role;
+
+    document
+        .getElementById("adminRoleBtn")
+        .classList.toggle("selected", role === "admin");
+
+    document
+        .getElementById("staffRoleBtn")
+        .classList.toggle("selected", role === "staff");
+
+    document
+        .getElementById("adminLoginFields")
+        .classList.toggle("hidden", role !== "admin");
+
+    document
+        .getElementById("staffLoginFields")
+        .classList.toggle("hidden", role !== "staff");
+
+    document.getElementById("loginMessage").innerHTML = "";
+
+}
+
+
+function login() {
+
+    const message =
+        document.getElementById("loginMessage");
+
+    if (loginRole === "admin") {
+
+        const username =
+            document.getElementById("adminUsernameInput").value.trim();
+
+        const password =
+            document.getElementById("adminPasswordInput").value;
+
+        if (
+            username === db.settings.adminUsername &&
+            password === db.settings.adminPassword
+        ) {
+
+            currentUser = {
+                role: "admin",
+                username: username
+            };
+
+            openApp();
+
+        } else {
+
+            message.innerHTML =
+                '<div class="alert alert-error">Incorrect admin username or password.</div>';
+
+        }
+
+    } else {
+
+        const id =
+            document.getElementById("staffLoginId").value.trim();
+
+        const password =
+            document.getElementById("staffLoginPassword").value;
+
+        const staff =
+            db.staff.find(
+                s => s.id.toLowerCase() === id.toLowerCase()
+            );
+
+        if (staff && staff.password === password) {
+
+            currentUser = {
+                role: "staff",
+                id: staff.id,
+                name: staff.name
+            };
+
+            openApp();
+
+        } else {
+
+            message.innerHTML =
+                '<div class="alert alert-error">Incorrect Staff ID or password.</div>';
+
+        }
+
+    }
+
+}
+
+
+function openApp() {
+
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    document.getElementById("welcomeMessage").innerHTML =
+        currentUser.role === "admin"
+        ? "Welcome, Administrator."
+        : "Welcome, " + escapeHTML(currentUser.name) + ".";
+
+    applyCompanySettings();
+
+    applyPermissions();
+
+    setDefaultDates();
+
+    updateAll();
+
+    showSection(
+        currentUser.role === "admin"
+        ? "dashboard"
+        : "checkin"
+    );
+
+}
+
+
+function logout() {
+
+    stopScanner("checkin");
+    stopScanner("checkout");
+
+    currentUser = null;
+
+    document.getElementById("app").style.display = "none";
+    document.getElementById("loginScreen").style.display = "flex";
+
+    document.getElementById("adminPasswordInput").value = "";
+    document.getElementById("staffLoginPassword").value = "";
+
+}
+
+
+function applyPermissions() {
+
+    const adminOnly = [
+        "navDashboard",
+        "navReport",
+        "navHistory",
+        "navRegister",
+        "navQR",
+        "navAdmin",
+        "navSettings"
+    ];
+
+    adminOnly.forEach(id => {
+
+        const element =
+            document.getElementById(id);
+
+        if (element) {
+
+            element.style.display =
+                currentUser.role === "admin"
+                ? ""
+                : "none";
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function showSection(sectionId) {
+
+    document
+        .querySelectorAll(".section")
+        .forEach(section => {
+            section.classList.remove("active");
+        });
+
+    const section =
+        document.getElementById(sectionId);
+
+    if (!section) return;
+
+    section.classList.add("active");
+
+    document
+        .querySelectorAll("nav button")
+        .forEach(button => {
+            button.classList.remove("active");
+        });
+
+    const navMap = {
+
+        dashboard: "navDashboard",
+        checkin: "navCheckin",
+        checkout: "navCheckout",
+        report: "navReport",
+        history: "navHistory",
+        register: "navRegister",
+        qr: "navQR",
+        admin: "navAdmin",
+        settings: "navSettings"
+
+    };
+
+    if (navMap[sectionId]) {
+
+        document
+            .getElementById(navMap[sectionId])
+            .classList.add("active");
+
+    }
+
+    if (sectionId === "dashboard") {
+        updateDashboard();
+    }
+
+    if (sectionId === "report") {
+        generateDailyReport();
+    }
+
+    if (sectionId === "history") {
+        loadHistory();
+    }
+
+    if (sectionId === "admin") {
+        loadStaffTable();
+        updateAdminStats();
+    }
+
+    if (sectionId === "qr") {
+        generateAllQR();
+    }
+
+    if (sectionId === "settings") {
+        loadSettings();
+    }
+
+}
+
+
+/* =========================================================
+   STAFF REGISTRATION
+========================================================= */
+
+function registerStaff() {
+
+    if (currentUser.role !== "admin") return;
+
+    const name =
+        document.getElementById("staffName").value.trim();
+
+    const id =
+        document.getElementById("staffId").value.trim();
+
+    const department =
+        document.getElementById("staffDepartment").value.trim();
+
+    const email =
+        document.getElementById("staffEmail").value.trim();
+
+    const expected =
+        document.getElementById("expectedCheckin").value || "09:00";
+
+    const password =
+        document.getElementById("staffPassword").value;
+
+    const confirm =
+        document.getElementById("staffPasswordConfirm").value;
+
+    const result =
+        document.getElementById("registerResult");
+
+
+    if (!name || !id || !department || !password) {
+
+        result.innerHTML =
+            '<div class="alert alert-error">Please fill in all required fields.</div>';
+
+        return;
+
+    }
+
+
+    if (password !== confirm) {
+
+        result.innerHTML =
+            '<div class="alert alert-error">Passwords do not match.</div>';
+
+        return;
+
+    }
+
+
+    if (
+        db.staff.some(
+            staff =>
+                staff.id.toLowerCase() === id.toLowerCase()
+        )
+    ) {
+
+        result.innerHTML =
+            '<div class="alert alert-error">That Staff ID already exists.</div>';
+
+        return;
+
+    }
+
+
+    db.staff.push({
+
+        name,
+        id,
+        department,
+        email,
+        expectedCheckin: expected,
+        password
+
+    });
+
+
+    saveDB();
+
+    result.innerHTML =
+        '<div class="alert alert-success">Staff registered successfully.</div>';
+
+
+    document.getElementById("staffName").value = "";
+    document.getElementById("staffId").value = "";
+    document.getElementById("staffDepartment").value = "";
+    document.getElementById("staffEmail").value = "";
+    document.getElementById("staffPassword").value = "";
+    document.getElementById("staffPasswordConfirm").value = "";
+
+    updateAll();
+
+}
+
+
+/* =========================================================
+   STAFF SELECT
+========================================================= */
+
+function populateStaffSelect() {
+
+    const select =
+        document.getElementById("manualCheckinStaff");
+
+    select.innerHTML =
+        '<option value="">Select Staff</option>';
+
+    db.staff.forEach(staff => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = staff.id;
+
+        option.textContent =
+            staff.name + " — " + staff.id;
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+/* =========================================================
+   DATE / TIME
+========================================================= */
+
+function getToday() {
+
+    const now = new Date();
+
+    const year =
+        now.getFullYear();
+
+    const month =
+        String(now.getMonth() + 1).padStart(2, "0");
+
+    const day =
+        String(now.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+
+}
+
+
+function getCurrentTime() {
+
+    const now = new Date();
+
+    return now.toLocaleTimeString(
+        [],
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        }
+    );
+
+}
+
+
+function setDefaultDates() {
+
+    const today = getToday();
+
+    document.getElementById("reportDate").value =
+        today;
+
+    document.getElementById("historyFrom").value =
+        today;
+
+    document.getElementById("historyTo").value =
+        today;
+
+}
+
+
+/* =========================================================
+   ATTENDANCE
+========================================================= */
+
+function findStaff(id) {
+
+    return db.staff.find(
+        staff =>
+            staff.id.toLowerCase() ===
+            String(id).trim().toLowerCase()
+    );
+
+}
+
+
+function getAttendanceRecord(staffId, date) {
+
+    return db.attendance.find(
+        record =>
+            record.staffId.toLowerCase() ===
+            staffId.toLowerCase() &&
+            record.date === date
+    );
+
+}
+
+
+function calculateStatus(staff, time) {
+
+    const expected =
+        staff.expectedCheckin ||
+        db.settings.startTime ||
+        "09:00";
+
+    const threshold =
+        Number(db.settings.lateThreshold) || 15;
+
+    const expectedMinutes =
+        timeToMinutes(expected);
+
+    const actualMinutes =
+        timeToMinutes(time);
+
+    if (
+        actualMinutes <=
+        expectedMinutes + threshold
+    ) {
+
+        return "Present";
+
+    }
+
+    return "Late";
+
+}
+
+
+function timeToMinutes(time) {
+
+    const parts =
+        String(time).split(":");
+
+    return (
+        Number(parts[0]) * 60 +
+        Number(parts[1] || 0)
+    );
+
+}
+
+
+function checkInStaff(staffId) {
+
+    const staff =
+        findStaff(staffId);
+
+    const result =
+        document.getElementById("checkinResult");
+
+    if (!staff) {
+
+        showResult(
+            result,
+            "Staff not found.",
+            false
+        );
+
+        return false;
+
+    }
+
+
+    const date = getToday();
+    const time = getCurrentTime();
+
+    let record =
+        getAttendanceRecord(
+            staff.id,
+            date
+        );
+
+
+    if (record && record.checkIn) {
+
+        showResult(
+            result,
+            staff.name +
+            " has already checked in today at " +
+            record.checkIn +
+            ".",
+            false
+        );
+
+        return false;
+
+    }
+
+
+    if (!record) {
+
+        record = {
+
+            date: date,
+            staffId: staff.id,
+            staffName: staff.name,
+            department: staff.department,
+            checkIn: time,
+            checkOut: "",
+            status: calculateStatus(
+                staff,
+                time
+            )
+
+        };
+
+        db.attendance.push(record);
+
+    } else {
+
+        record.checkIn = time;
+
+        record.status =
+            calculateStatus(
+                staff,
+                time
+            );
+
+    }
+
+
+    saveDB();
+
+    showResult(
+        result,
+        "Check-in successful for " +
+        staff.name +
+        " at " +
+        time +
+        ". Status: " +
+        record.status,
+        true
+    );
+
+    updateAll();
+
+    return true;
+
+}
+
+
+function manualCheckin() {
+
+    const id =
+        document.getElementById("manualCheckinStaff").value;
+
+    if (!id) {
+
+        document.getElementById("checkinResult").innerHTML =
+            '<div class="alert alert-error">Please select a staff member.</div>';
+
+        return;
+
+    }
+
+    checkInStaff(id);
+
+}
+
+
+function checkOutStaff(staffId) {
+
+    const staff =
+        findStaff(staffId);
+
+    const result =
+        document.getElementById("checkoutResult");
+
+    if (!staff) {
+
+        showResult(
+            result,
+            "Staff not found.",
+            false
+        );
+
+        return false;
+
+    }
+
+
+    const date = getToday();
+
+    const time = getCurrentTime();
+
+    const record =
+        getAttendanceRecord(
+            staff.id,
+            date
+        );
+
+
+    if (!record || !record.checkIn) {
+
+        showResult(
+            result,
+            staff.name +
+            " has not checked in today.",
+            false
+        );
+
+        return false;
+
+    }
+
+
+    if (record.checkOut) {
+
+        showResult(
+            result,
+            staff.name +
+            " has already checked out at " +
+            record.checkOut +
+            ".",
+            false
+        );
+
+        return false;
+
+    }
+
+
+    record.checkOut = time;
+
+    saveDB();
+
+    showResult(
+        result,
+        "Check-out successful for " +
+        staff.name +
+        " at " +
+        time +
+        ".",
+        true
+    );
+
+    updateAll();
+
+    return true;
+
+}
+
+
+function manualCheckout() {
+
+    const id =
+        document.getElementById("manualCheckoutId").value.trim();
+
+    if (!id) {
+
+        document.getElementById("checkoutResult").innerHTML =
+            '<div class="alert alert-error">Enter a Staff ID.</div>';
+
+        return;
+
+    }
+
+    checkOutStaff(id);
+
+}
+
+
+/* =========================================================
+   STAFF SELF CHECK-IN RESTRICTION
+========================================================= */
+
+function getAllowedStaffId() {
+
+    if (
+        currentUser &&
+        currentUser.role === "staff"
+    ) {
+
+        return currentUser.id;
+
+    }
+
+    return null;
+
+}
+
+
+/* =========================================================
+   QR SCANNER
+========================================================= */
+
+let scannerStreams = {
+    checkin: null,
+    checkout: null
+};
+
+let scannerIntervals = {
+    checkin: null,
+    checkout: null
+};
+
+
+async function startScanner(type) {
+
+    try {
+
+        const video =
+            document.getElementById(
+                type === "checkin"
+                ? "checkinVideo"
+                : "checkoutVideo"
+            );
+
+        const message =
+            document.getElementById(
+                type === "checkin"
+                ? "checkinScanMessage"
+                : "checkoutScanMessage"
+            );
+
+        scannerStreams[type] =
+            await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: {
+                        ideal: "environment"
+                    }
+                },
+                audio: false
+            });
+
+        video.srcObject =
+            scannerStreams[type];
+
+        video.setAttribute(
+            "playsinline",
+            true
+        );
+
+        await video.play();
+
+        message.innerHTML =
+            '<div class="alert alert-info">Camera started. Point it at the staff QR code.</div>';
+
+
+        const canvas =
+            document.getElementById(
+                type === "checkin"
+                ? "checkinCanvas"
+                : "checkoutCanvas"
+            );
+
+        const context =
+            canvas.getContext("2d");
+
+
+        scannerIntervals[type] =
+            setInterval(() => {
+
+                if (
+                    video.readyState !==
+                    video.HAVE_ENOUGH_DATA
+                ) {
+                    return;
+                }
+
+
+                canvas.width =
+                    video.videoWidth;
+
+                canvas.height =
+                    video.videoHeight;
+
+                context.drawImage(
+                    video,
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+
+                const imageData =
+                    context.getImageData(
+                        0,
+                        0,
+                        canvas.width,
+                        canvas.height
+                    );
+
+
+                const code =
+                    jsQR(
+                        imageData.data,
+                        imageData.width,
+                        imageData.height
+                    );
+
+
+                if (code) {
+
+                    handleQRScan(
+                        type,
+                        code.data
+                    );
+
+                }
+
+            }, 300);
+
+    } catch (error) {
+
+        document.getElementById(
+            type === "checkin"
+            ? "checkinScanMessage"
+            : "checkoutScanMessage"
+        ).innerHTML =
+            '<div class="alert alert-error">Camera could not start. Check your browser camera permission or use manual entry.</div>';
+
+    }
+
+}
+
+
+function stopScanner(type) {
+
+    if (scannerIntervals[type]) {
+
+        clearInterval(
+            scannerIntervals[type]
+        );
+
+        scannerIntervals[type] = null;
+
+    }
+
+
+    if (scannerStreams[type]) {
+
+        scannerStreams[type]
+            .getTracks()
+            .forEach(track => track.stop());
+
+        scannerStreams[type] = null;
+
+    }
+
+
+    const video =
+        document.getElementById(
+            type === "checkin"
+            ? "checkinVideo"
+            : "checkoutVideo"
+        );
+
+    if (video) {
+        video.srcObject = null;
+    }
+
+}
+
+
+function handleQRScan(type, data) {
+
+    stopScanner(type);
+
+    const id =
+        String(data).trim();
+
+    if (
+        currentUser &&
+        currentUser.role === "staff" &&
+        currentUser.id.toLowerCase() !== id.toLowerCase()
+    ) {
+
+        const message =
+            document.getElementById(
+                type === "checkin"
+                ? "checkinScanMessage"
+                : "checkoutScanMessage"
+            );
+
+        message.innerHTML =
+            '<div class="alert alert-error">You can only scan your own Staff QR code.</div>';
+
+        return;
+
+    }
+
+
+    if (type === "checkin") {
+
+        checkInStaff(id);
+
+    } else {
+
+        checkOutStaff(id);
+
+    }
+
+}
+
+
+/* =========================================================
+   DAILY REPORT
+========================================================= */
+
+function generateDailyReport() {
+
+    const date =
+        document.getElementById("reportDate").value ||
+        getToday();
+
+    const records =
+        db.attendance.filter(
+            record =>
+                record.date === date
+        );
+
+
+    let present = 0;
+    let late = 0;
+
+
+    const rows =
+        db.staff.map(staff => {
+
+            const record =
+                records.find(
+                    r =>
+                        r.staffId.toLowerCase() ===
+                        staff.id.toLowerCase()
+                );
+
+
+            let status = "Absent";
+
+            if (record) {
+
+                status =
+                    record.status || "Present";
+
+                if (status === "Late") {
+                    late++;
+                } else {
+                    present++;
+                }
+
+            }
+
+
+            return {
+
+                date,
+                name: staff.name,
+                id: staff.id,
+                department: staff.department,
+                checkIn:
+                    record?.checkIn || "-",
+                checkOut:
+                    record?.checkOut || "-",
+                status
+
+            };
+
+        });
+
+
+    document.getElementById("reportTotal").textContent =
+        db.staff.length;
+
+    document.getElementById("reportPresent").textContent =
+        present;
+
+    document.getElementById("reportLate").textContent =
+        late;
+
+    document.getElementById("reportAbsent").textContent =
+        db.staff.length - present - late;
+
+
+    const tbody =
+        document.getElementById("reportTable");
+
+    tbody.innerHTML = "";
+
+    rows.forEach(row => {
+
+        const tr =
+            document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${escapeHTML(row.date)}</td>
+            <td>${escapeHTML(row.name)}</td>
+            <td>${escapeHTML(row.id)}</td>
+            <td>${escapeHTML(row.department)}</td>
+            <td>${escapeHTML(row.checkIn)}</td>
+            <td>${escapeHTML(row.checkOut)}</td>
+            <td>${statusBadge(row.status)}</td>
+        `;
+
+        tbody.appendChild(tr);
+
+    });
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function updateDashboard() {
+
+    const date = getToday();
+
+    const records =
+        db.attendance.filter(
+            r => r.date === date
+        );
+
+
+    let present = 0;
+    let late = 0;
+    let checkedOut = 0;
+
+
+    const tbody =
+        document.getElementById("dashboardTable");
+
+    tbody.innerHTML = "";
+
+
+    db.staff.forEach(staff => {
+
+        const record =
+            records.find(
+                r =>
+                    r.staffId.toLowerCase() ===
+                    staff.id.toLowerCase()
+            );
+
+
+        let status = "Absent";
+
+        let checkIn = "-";
+        let checkOut = "-";
+
+
+        if (record) {
+
+            status =
+                record.status || "Present";
+
+            checkIn =
+                record.checkIn || "-";
+
+            checkOut =
+                record.checkOut || "-";
+
+            if (status === "Late") {
+
+                late++;
+
+            } else {
+
+                present++;
+
+            }
+
+
+            if (record.checkOut) {
+
+                checkedOut++;
+
+            }
+
+        }
+
+
+        const tr =
+            document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${escapeHTML(staff.name)}</td>
+            <td>${escapeHTML(staff.id)}</td>
+            <td>${escapeHTML(staff.department)}</td>
+            <td>${escapeHTML(checkIn)}</td>
+            <td>${escapeHTML(checkOut)}</td>
+            <td>${statusBadge(status)}</td>
+        `;
+
+        tbody.appendChild(tr);
+
+    });
+
+
+    const absent =
+        Math.max(
+            0,
+            db.staff.length -
+            present -
+            late
+        );
+
+
+    const rate =
+        db.staff.length
+        ? Math.round(
+            ((present + late) /
+            db.staff.length) * 100
+        )
+        : 0;
+
+
+    const departments =
+        new Set(
+            db.staff.map(
+                s => s.department
+            )
+        ).size;
+
+
+    document.getElementById("dashboardDate").textContent =
+        "Date: " + date;
+
+    document.getElementById("dashTotalStaff").textContent =
+        db.staff.length;
+
+    document.getElementById("dashPresent").textContent =
+        present;
+
+    document.getElementById("dashLate").textContent =
+        late;
+
+    document.getElementById("dashAbsent").textContent =
+        absent;
+
+    document.getElementById("dashCheckedOut").textContent =
+        checkedOut;
+
+    document.getElementById("dashNotCheckedOut").textContent =
+        Math.max(
+            0,
+            present + late - checkedOut
+        );
+
+    document.getElementById("dashAttendanceRate").textContent =
+        rate + "%";
+
+    document.getElementById("dashDepartments").textContent =
+        departments;
+
+}
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function loadHistory() {
+
+    const from =
+        document.getElementById("historyFrom").value;
+
+    const to =
+        document.getElementById("historyTo").value;
+
+    const staffId =
+        document
+            .getElementById("historyStaffId")
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    let records =
+        [...db.attendance];
+
+
+    if (from) {
+
+        records =
+            records.filter(
+                r => r.date >= from
+            );
+
+    }
+
+
+    if (to) {
+
+        records =
+            records.filter(
+                r => r.date <= to
+            );
+
+    }
+
+
+    if (staffId) {
+
+        records =
+            records.filter(
+                r =>
+                    r.staffId.toLowerCase() ===
+                    staffId
+            );
+
+    }
+
+
+    records.sort(
+        (a,b) =>
+            b.date.localeCompare(a.date)
+    );
+
+
+    const tbody =
+        document.getElementById("historyTable");
+
+    tbody.innerHTML = "";
+
+
+    records.forEach(record => {
+
+        const tr =
+            document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${escapeHTML(record.date)}</td>
+            <td>${escapeHTML(record.staffName)}</td>
+            <td>${escapeHTML(record.staffId)}</td>
+            <td>${escapeHTML(record.department)}</td>
+            <td>${escapeHTML(record.checkIn || "-")}</td>
+            <td>${escapeHTML(record.checkOut || "-")}</td>
+            <td>${statusBadge(record.status || "Present")}</td>
+        `;
+
+        tbody.appendChild(tr);
+
+    });
+
+}
+
+
+/* =========================================================
+   STAFF MANAGEMENT
+========================================================= */
+
+function loadStaffTable() {
+
+    const tbody =
+        document.getElementById("staffTable");
+
+    tbody.innerHTML = "";
+
+
+    db.staff.forEach(staff => {
+
+        const tr =
+            document.createElement("tr");
+
+        tr.innerHTML = `
+            <td>${escapeHTML(staff.name)}</td>
+            <td>${escapeHTML(staff.id)}</td>
+            <td>${escapeHTML(staff.department)}</td>
+            <td>${escapeHTML(staff.email || "-")}</td>
+            <td>${escapeHTML(staff.expectedCheckin || "-")}</td>
+            <td>
+                <button
+                    class="danger"
+                    onclick="deleteStaff('${encodeURIComponent(staff.id)}')">
+                    Delete
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+
+    });
+
+}
+
+
+function deleteStaff(encodedId) {
+
+    if (currentUser.role !== "admin") return;
+
+    const id =
+        decodeURIComponent(encodedId);
+
+    if (
+        !confirm(
+            "Delete staff member " +
+            id +
+            "?"
+        )
+    ) return;
+
+
+    db.staff =
+        db.staff.filter(
+            staff => staff.id !== id
+        );
+
+
+    saveDB();
+
+    loadStaffTable();
+
+    populateStaffSelect();
+
+    updateAll();
+
+}
+
+
+/* =========================================================
+   QR GENERATION
+========================================================= */
+
+function generateAllQR() {
+
+    const container =
+        document.getElementById("qrList");
+
+    container.innerHTML = "";
+
+
+    if (db.staff.length === 0) {
+
+        container.innerHTML =
+            '<div class="card">No staff members registered yet.</div>';
+
+        return;
+
+    }
+
+
+    db.staff.forEach(staff => {
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "qr-card";
+
+
+        const title =
+            document.createElement("h3");
+
+        title.textContent =
+            staff.name;
+
+
+        const info =
+            document.createElement("p");
+
+        info.innerHTML =
+            escapeHTML(staff.id) +
+            "<br>" +
+            escapeHTML(staff.department);
+
+
+        const canvas =
+            document.createElement("canvas");
+
+
+        const download =
+            document.createElement("button");
+
+        download.className =
+            "primary";
+
+        download.textContent =
+            "Download QR";
+
+
+        QRCode.toCanvas(
+            canvas,
+            staff.id,
+            {
+                width: 190,
+                margin: 2
+            },
+            function(error) {
+
+                if (error) {
+                    console.error(error);
+                }
+
+            }
+        );
+
+
+        download.onclick =
+            function() {
+
+                const link =
+                    document.createElement("a");
+
+                link.download =
+                    "QR-" +
+                    staff.id +
+                    ".png";
+
+                link.href =
+                    canvas.toDataURL(
+                        "image/png"
+                    );
+
+                link.click();
+
+            };
+
+
+        card.appendChild(title);
+        card.appendChild(info);
+        card.appendChild(canvas);
+        card.appendChild(download);
+
+        container.appendChild(card);
+
+    });
+
+}
+
+
+/* =========================================================
+   ADMIN SETTINGS
+========================================================= */
+
+function loadSettings() {
+
+    document.getElementById("newAdminUsername").value =
+        db.settings.adminUsername;
+
+    document.getElementById("companyNameInput").value =
+        db.settings.companyName;
+
+    document.getElementById("companyTaglineInput").value =
+        db.settings.companyTagline;
+
+    document.getElementById("companyStartTime").value =
+        db.settings.startTime;
+
+    document.getElementById("lateThreshold").value =
+        db.settings.lateThreshold;
+
+}
+
+
+function changeAdminCredentials() {
+
+    const newUsername =
+        document
+            .getElementById("newAdminUsername")
+            .value
+            .trim();
+
+    const currentPassword =
+        document.getElementById(
+            "currentAdminPassword"
+        ).value;
+
+    const newPassword =
+        document.getElementById(
+            "newAdminPassword"
+        ).value;
+
+    const confirmPassword =
+        document.getElementById(
+            "confirmAdminPassword"
+        ).value;
+
+    const result =
+        document.getElementById(
+            "settingsResult"
+        );
+
+
+    if (
+        currentPassword !==
+        db.settings.adminPassword
+    ) {
+
+        result.innerHTML =
+            '<div class="alert alert-error">Current password is incorrect.</div>';
+
+        return;
+
+    }
+
+
+    if (!newUsername) {
+
+        result.innerHTML =
+            '<div class="alert alert-error">Enter an admin username.</div>';
+
+        return;
+
+    }
+
+
+    if (
+        newPassword &&
+        newPassword !== confirmPassword
+    ) {
+
+        result.innerHTML =
+            '<div class="alert alert-error">New passwords do not match.</div>';
+
+        return;
+
+    }
+
+
+    db.settings.adminUsername =
+        newUsername;
+
+    if (newPassword) {
+
+        db.settings.adminPassword =
+            newPassword;
+
+    }
+
+
+    saveDB();
+
+    result.innerHTML =
+        '<div class="alert alert-success">Admin settings updated successfully.</div>';
+
+    document.getElementById(
+        "currentAdminPassword"
+    ).value = "";
+
+    document.getElementById(
+        "newAdminPassword"
+    ).value = "";
+
+    document.getElementById(
+        "confirmAdminPassword"
+    ).value = "";
+
+}
+
+
+/* =========================================================
+   COMPANY SETTINGS
+========================================================= */
+
+function saveCompanySettings() {
+
+    db.settings.companyName =
+        document
+            .getElementById("companyNameInput")
+            .value
+            .trim() ||
+        "Staff Attendance System";
+
+
+    db.settings.companyTagline =
+        document
+            .getElementById("companyTaglineInput")
+            .value
+            .trim() ||
+        "Professional Attendance Tracking & Management with QR Code Scanning";
+
+
+    db.settings.startTime =
+        document
+            .getElementById("companyStartTime")
+            .value ||
+        "09:00";
+
+
+    db.settings.lateThreshold =
+        Number(
+            document.getElementById(
+                "lateThreshold"
+            ).value
+        ) || 15;
+
+
+    saveDB();
+
+    applyCompanySettings();
+
+    document.getElementById(
+        "companySettingsResult"
+    ).innerHTML =
+        '<div class="alert alert-success">Company settings saved successfully.</div>';
+
+}
+
+
+function applyCompanySettings() {
+
+    document.getElementById(
+        "companyNameDisplay"
+    ).textContent =
+        db.settings.companyName;
+
+
+    document.getElementById(
+        "companyTagline"
+    ).textContent =
+        db.settings.companyTagline;
+
+
+    document.getElementById(
+        "loginCompanyName"
+    ).textContent =
+        db.settings.companyName;
+
+}
+
+
+/* =========================================================
+   BACKUP / RESTORE
+========================================================= */
+
+function backupData() {
+
+    const data =
+        JSON.stringify(
+            db,
+            null,
+            2
+        );
+
+
+    const blob =
+        new Blob(
+            [data],
+            {
+                type: "application/json"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement("a");
+
+    link.href = url;
+
+    link.download =
+        "staff-attendance-backup-" +
+        getToday() +
+        ".json";
+
+    link.click();
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+function restoreData() {
+
+    document
+        .getElementById("restoreFile")
+        .click();
+
+}
+
+
+function processRestore(event) {
+
+    const file =
+        event.target.files[0];
+
+    if (!file) return;
+
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload =
+        function(e) {
+
+            try {
+
+                const imported =
+                    JSON.parse(
+                        e.target.result
+                    );
+
+
+                if (
+                    !imported.settings ||
+                    !Array.isArray(imported.staff) ||
+                    !Array.isArray(imported.attendance)
+                ) {
+
+                    alert(
+                        "Invalid backup file."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    confirm(
+                        "Restore this backup? Existing data will be replaced."
+                    )
+                ) {
+
+                    db = imported;
+
+                    saveDB();
+
+                    updateAll();
+
+                    alert(
+                        "Backup restored successfully."
+                    );
+
+                }
+
+            } catch(error) {
+
+                alert(
+                    "Could not read the backup file."
+                );
+
+            }
+
+        };
+
+
+    reader.readAsText(file);
+
+}
+
+
+/* =========================================================
+   DATABASE RESET
+========================================================= */
+
+function clearAttendance() {
+
+    if (currentUser.role !== "admin") return;
+
+    if (
+        !confirm(
+            "Clear ALL attendance records?"
+        )
+    ) return;
+
+
+    db.attendance = [];
+
+    saveDB();
+
+    updateAll();
+
+    alert(
+        "Attendance records cleared."
+    );
+
+}
+
+
+function resetDatabase() {
+
+    if (currentUser.role !== "admin") return;
+
+    if (
+        !confirm(
+            "WARNING: This will delete ALL staff and attendance data. Continue?"
+        )
+    ) return;
+
+
+    if (
+        !confirm(
+            "Are you absolutely sure?"
+        )
+    ) return;
+
+
+    db = {
+
+        settings: {
+
+            adminUsername: "admin",
+            adminPassword: "admin123",
+            companyName: "Staff Attendance System",
+            companyTagline:
+                "Professional Attendance Tracking & Management with QR Code Scanning",
+            startTime: "09:00",
+            lateThreshold: 15
+
+        },
+
+        staff: [],
+
+        attendance: []
+
+    };
+
+
+    saveDB();
+
+    updateAll();
+
+    alert(
+        "Database reset successfully. Default admin login is admin / admin123."
+    );
+
+}
+
+
+/* =========================================================
+   CSV EXPORT
+========================================================= */
+
+function csvEscape(value) {
+
+    return '"' +
+        String(value ?? "")
+            .replace(/"/g, '""') +
+        '"';
+
+}
+
+
+function downloadCSV(rows, filename) {
+
+    const csv =
+        rows
+            .map(
+                row =>
+                    row.map(csvEscape).join(",")
+            )
+            .join("\n");
+
+
+    const blob =
+        new Blob(
+            [csv],
+            {
+                type: "text/csv;charset=utf-8;"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement("a");
+
+    link.href = url;
+
+    link.download = filename;
+
+    link.click();
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+function exportCurrentReport() {
+
+    const date =
+        document.getElementById(
+            "reportDate"
+        ).value || getToday();
+
+
+    const rows = [
+
+        [
+            "Date",
+            "Staff Name",
+            "Staff ID",
+            "Department",
+            "Check-In",
+            "Check-Out",
+            "Status"
+        ]
+
+    ];
+
+
+    db.staff.forEach(staff => {
+
+        const record =
+            getAttendanceRecord(
+                staff.id,
+                date
+            );
+
+
+        rows.push([
+
+            date,
+            staff.name,
+            staff.id,
+            staff.department,
+            record?.checkIn || "",
+            record?.checkOut || "",
+            record?.status || "Absent"
+
+        ]);
+
+    });
+
+
+    downloadCSV(
+        rows,
+        "attendance-report-" +
+        date +
+        ".csv"
+    );
+
+}
+
+
+function exportHistory() {
+
+    const from =
+        document.getElementById(
+            "historyFrom"
+        ).value;
+
+    const to =
+        document.getElementById(
+            "historyTo"
+        ).value;
+
+    const staffId =
+        document
+            .getElementById(
+                "historyStaffId"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    let records =
+        [...db.attendance];
+
+
+    if (from) {
+
+        records =
+            records.filter(
+                r => r.date >= from
+            );
+
+    }
+
+
+    if (to) {
+
+        records =
+            records.filter(
+                r => r.date <= to
+            );
+
+    }
+
+
+    if (staffId) {
+
+        records =
+            records.filter(
+                r =>
+                    r.staffId.toLowerCase() ===
+                    staffId
+            );
+
+    }
+
+
+    const rows = [
+
+        [
+            "Date",
+            "Staff Name",
+            "Staff ID",
+            "Department",
+            "Check-In",
+            "Check-Out",
+            "Status"
+        ]
+
+    ];
+
+
+    records.forEach(record => {
+
+        rows.push([
+
+            record.date,
+            record.staffName,
+            record.staffId,
+            record.department,
+            record.checkIn || "",
+            record.checkOut || "",
+            record.status || ""
+
+        ]);
+
+    });
+
+
+    downloadCSV(
+        rows,
+        "attendance-history.csv"
+    );
+
+}
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function statusBadge(status) {
+
+    const clean =
+        String(status)
+            .toLowerCase()
+            .replace(/\s/g, "");
+
+
+    let className =
+        "present";
+
+
+    if (clean === "late") {
+
+        className = "late";
+
+    } else if (clean === "absent") {
+
+        className = "absent";
+
+    } else if (clean === "checkedout") {
+
+        className = "checkedout";
+
+    }
+
+
+    return `
+        <span class="badge ${className}">
+            ${escapeHTML(status)}
+        </span>
+    `;
+
+}
+
+
+function showResult(
+    element,
+    message,
+    success
+) {
+
+    element.innerHTML =
+        `<div class="alert ${
+            success
+            ? "alert-success"
+            : "alert-error"
+        }">${escapeHTML(message)}</div>`;
+
+}
+
+
+function escapeHTML(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
+   ADMIN STATISTICS
+========================================================= */
+
+function updateAdminStats() {
+
+    document.getElementById(
+        "adminStaffCount"
+    ).textContent =
+        db.staff.length;
+
+
+    document.getElementById(
+        "adminRecordsCount"
+    ).textContent =
+        db.attendance.length;
+
+}
+
+
+/* =========================================================
+   UPDATE EVERYTHING
+========================================================= */
+
+function updateAll() {
+
+    populateStaffSelect();
+
+    updateDashboard();
+
+    updateAdminStats();
+
+    if (
+        document
+            .getElementById("report")
+            .classList.contains("active")
+    ) {
+
+        generateDailyReport();
+
+    }
+
+    if (
+        document
+            .getElementById("history")
+            .classList.contains("active")
+    ) {
+
+        loadHistory();
+
+    }
+
+    if (
+        document
+            .getElementById("admin")
+            .classList.contains("active")
+    ) {
+
+        loadStaffTable();
+
+    }
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+applyCompanySettings();
+
+</script>
+
+</body>
+</html>
