@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,12 +10,13 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
-body{
+html,body{
   margin:0;
+  padding:0;
+  width:100%;
+  min-height:100%;
   font-family:Arial,sans-serif;
   background:#f2f5f9;
   color:#222;
@@ -22,15 +24,16 @@ body{
 
 button{
   cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
 }
 
-.hidden{
-  display:none !important;
-}
+.hidden{display:none!important}
 
 /* LOGIN */
 #loginScreen{
   min-height:100vh;
+  min-height:100dvh;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -41,7 +44,7 @@ button{
 .login-box{
   width:100%;
   max-width:430px;
-  background:white;
+  background:#fff;
   border-radius:18px;
   padding:30px;
   box-shadow:0 10px 35px rgba(0,0,0,.25);
@@ -73,16 +76,17 @@ button{
 
 .role-buttons button{
   flex:1;
-  padding:13px;
+  padding:14px 10px;
   border:2px solid #ddd;
   border-radius:8px;
   background:#fff;
   font-weight:bold;
+  font-size:16px;
 }
 
 .role-buttons button.selected{
   background:#123c69;
-  color:white;
+  color:#fff;
   border-color:#123c69;
 }
 
@@ -107,17 +111,21 @@ button{
 }
 
 .login-button{
+  display:block;
   width:100%;
-  padding:14px;
+  padding:15px;
+  margin-top:5px;
   border:0;
   border-radius:8px;
   background:#123c69;
-  color:white;
-  font-size:17px;
+  color:#fff;
+  font-size:18px;
   font-weight:bold;
+  min-height:52px;
 }
 
-.login-button:hover{
+.login-button:active{
+  transform:scale(.98);
   background:#0d2f52;
 }
 
@@ -126,16 +134,19 @@ button{
   gap:8px;
 }
 
-.password-row input{
-  flex:1;
-}
+.password-row input{flex:1}
 
 .show-password{
-  display:flex;
+  display:flex!important;
   align-items:center;
   gap:5px;
-  font-size:13px;
+  font-size:13px!important;
+  font-weight:normal!important;
   margin-top:6px;
+}
+
+.show-password input{
+  width:auto!important;
 }
 
 .login-help{
@@ -148,7 +159,7 @@ button{
 /* APP */
 header{
   background:#123c69;
-  color:white;
+  color:#fff;
   padding:18px 20px;
 }
 
@@ -171,13 +182,9 @@ header p{
   opacity:.9;
 }
 
-.user-info{
-  text-align:right;
-}
+.user-info{text-align:right}
 
-.user-info strong{
-  display:block;
-}
+.user-info strong{display:block}
 
 nav{
   background:#fff;
@@ -194,7 +201,7 @@ nav{
 
 nav button{
   border:0;
-  background:white;
+  background:#fff;
   padding:14px 15px;
   font-weight:bold;
   color:#123c69;
@@ -203,7 +210,7 @@ nav button{
 nav button:hover,
 nav button.active{
   background:#123c69;
-  color:white;
+  color:#fff;
 }
 
 main{
@@ -212,16 +219,12 @@ main{
   padding:0 15px;
 }
 
-.section{
-  display:none;
-}
+.section{display:none}
 
-.section.active{
-  display:block;
-}
+.section.active{display:block}
 
 .card{
-  background:white;
+  background:#fff;
   padding:20px;
   border-radius:12px;
   box-shadow:0 2px 8px rgba(0,0,0,.08);
@@ -241,7 +244,7 @@ main{
 }
 
 .stat-card{
-  background:white;
+  background:#fff;
   border-radius:12px;
   padding:20px;
   box-shadow:0 2px 8px rgba(0,0,0,.08);
@@ -266,9 +269,7 @@ main{
   gap:15px;
 }
 
-.full{
-  grid-column:1/-1;
-}
+.full{grid-column:1/-1}
 
 .primary-btn,
 .success-btn,
@@ -281,25 +282,10 @@ main{
   margin:4px;
 }
 
-.primary-btn{
-  background:#123c69;
-  color:white;
-}
-
-.success-btn{
-  background:#198754;
-  color:white;
-}
-
-.danger-btn{
-  background:#dc3545;
-  color:white;
-}
-
-.secondary-btn{
-  background:#6c757d;
-  color:white;
-}
+.primary-btn{background:#123c69;color:#fff}
+.success-btn{background:#198754;color:#fff}
+.danger-btn{background:#dc3545;color:#fff}
+.secondary-btn{background:#6c757d;color:#fff}
 
 .video-box{
   width:100%;
@@ -325,7 +311,7 @@ video{
 table{
   width:100%;
   border-collapse:collapse;
-  background:white;
+  background:#fff;
 }
 
 th,td{
@@ -336,12 +322,10 @@ th,td{
 
 th{
   background:#123c69;
-  color:white;
+  color:#fff;
 }
 
-.table-container{
-  overflow-x:auto;
-}
+.table-container{overflow-x:auto}
 
 .alert{
   padding:12px;
@@ -371,7 +355,7 @@ th{
 }
 
 .qr-card{
-  background:white;
+  background:#fff;
   border:1px solid #ddd;
   border-radius:10px;
   padding:15px;
@@ -433,9 +417,7 @@ footer{
     align-items:flex-start;
   }
 
-  .user-info{
-    text-align:left;
-  }
+  .user-info{text-align:left}
 }
 
 @media(max-width:600px){
@@ -454,13 +436,18 @@ footer{
   header h1{
     font-size:20px;
   }
+
+  .login-button{
+    min-height:55px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<!-- ================= LOGIN SCREEN ================= -->
+<!-- ================= LOGIN ================= -->
+
 <div id="loginScreen">
 
   <div class="login-box">
@@ -474,27 +461,29 @@ footer{
     </div>
 
     <div class="role-buttons">
+
       <button
         id="adminRoleBtn"
         class="selected"
-        type="button"
-        onclick="selectLoginRole('admin')">
+        type="button">
         🔐 Admin
       </button>
 
       <button
         id="staffRoleBtn"
-        type="button"
-        onclick="selectLoginRole('staff')">
+        type="button">
         👤 Staff
       </button>
+
     </div>
 
-    <!-- ADMIN LOGIN -->
+    <!-- ADMIN -->
+
     <div id="adminLoginFields">
 
       <div class="input-group">
         <label>Admin Username</label>
+
         <input
           id="adminUsernameInput"
           type="text"
@@ -503,6 +492,7 @@ footer{
       </div>
 
       <div class="input-group">
+
         <label>Admin Password</label>
 
         <input
@@ -513,27 +503,33 @@ footer{
 
         <label class="show-password">
           <input
-            type="checkbox"
-            onchange="togglePassword('adminPasswordInput',this)">
+            id="adminShowPassword"
+            type="checkbox">
           Show password
         </label>
+
       </div>
 
     </div>
 
-    <!-- STAFF LOGIN -->
+    <!-- STAFF -->
+
     <div id="staffLoginFields" class="hidden">
 
       <div class="input-group">
+
         <label>Staff ID</label>
+
         <input
           id="staffLoginId"
           type="text"
           autocomplete="username"
           placeholder="Enter Staff ID">
+
       </div>
 
       <div class="input-group">
+
         <label>Staff Password</label>
 
         <input
@@ -544,20 +540,22 @@ footer{
 
         <label class="show-password">
           <input
-            type="checkbox"
-            onchange="togglePassword('staffLoginPassword',this)">
+            id="staffShowPassword"
+            type="checkbox">
           Show password
         </label>
+
       </div>
 
     </div>
 
     <div id="loginMessage"></div>
 
+    <!-- IMPORTANT: NO INLINE ONCLICK -->
     <button
+      id="loginButton"
       class="login-button"
-      type="button"
-      onclick="login()">
+      type="button">
       LOGIN
     </button>
 
@@ -570,86 +568,71 @@ footer{
 
 
 <!-- ================= MAIN APP ================= -->
+
 <div id="app" style="display:none;">
 
 <header>
+
   <div class="header-content">
 
     <div>
-      <h1 id="companyNameDisplay">Staff Attendance System</h1>
+
+      <h1 id="companyNameDisplay">
+        Staff Attendance System
+      </h1>
+
       <p id="companyTagline">
         Professional Attendance Tracking & Management with QR Code Scanning
       </p>
+
     </div>
 
     <div class="user-info">
+
       <strong id="welcomeUser">Welcome</strong>
+
       <span id="userRoleDisplay"></span>
+
     </div>
 
   </div>
+
 </header>
 
 
 <nav>
+
   <div class="nav-inner">
 
-    <button id="navDashboard"
-      onclick="showSection('dashboard',this)">
-      Dashboard
-    </button>
+    <button id="navDashboard">Dashboard</button>
 
-    <button
-      onclick="showSection('checkin',this)">
-      QR Check-In
-    </button>
+    <button data-section="checkin">QR Check-In</button>
 
-    <button
-      onclick="showSection('checkout',this)">
-      QR Check-Out
-    </button>
+    <button data-section="checkout">QR Check-Out</button>
 
-    <button id="navReport"
-      onclick="showSection('report',this)">
-      Daily Report
-    </button>
+    <button id="navReport" data-section="report">Daily Report</button>
 
-    <button id="navHistory"
-      onclick="showSection('history',this)">
-      History
-    </button>
+    <button id="navHistory" data-section="history">History</button>
 
-    <button id="navRegister"
-      onclick="showSection('register',this)">
-      Register Staff
-    </button>
+    <button id="navRegister" data-section="register">Register Staff</button>
 
-    <button id="navQR"
-      onclick="showSection('staffQR',this)">
-      Staff QR Codes
-    </button>
+    <button id="navQR" data-section="staffQR">Staff QR Codes</button>
 
-    <button id="navAdmin"
-      onclick="showSection('admin',this)">
-      Admin Panel
-    </button>
+    <button id="navAdmin" data-section="admin">Admin Panel</button>
 
-    <button id="navSettings"
-      onclick="showSection('settings',this)">
-      Admin Settings
-    </button>
+    <button id="navSettings" data-section="settings">Admin Settings</button>
 
-    <button onclick="logout()">
-      Logout
-    </button>
+    <button id="logoutButton">Logout</button>
 
   </div>
+
 </nav>
 
 
 <main>
 
-<!-- ================= DASHBOARD ================= -->
+<!-- DASHBOARD -->
+
 <section id="dashboard" class="section">
 
   <div class="card">
@@ -682,11 +665,15 @@ footer{
   </div>
 
   <div class="card">
+
     <h3>Today's Attendance</h3>
 
     <div class="table-container">
+
       <table>
+
         <thead>
+
           <tr>
             <th>Staff ID</th>
             <th>Name</th>
@@ -694,10 +681,13 @@ footer{
             <th>Status</th>
             <th>Check-Out</th>
           </tr>
+
         </thead>
 
         <tbody id="dashboardTableBody"></tbody>
+
       </table>
+
     </div>
 
   </div>
@@ -705,7 +695,8 @@ footer{
 </section>
 
 
-<!-- ================= CHECK IN ================= -->
+<!-- CHECK IN -->
+
 <section id="checkin" class="section">
 
   <div class="card">
@@ -718,15 +709,15 @@ footer{
 
     <br>
 
-    <button class="primary-btn" onclick="startCamera('checkin')">
+    <button class="primary-btn" id="startCheckinCamera">
       Start Camera
     </button>
 
-    <button class="secondary-btn" onclick="stopCamera('checkin')">
+    <button class="secondary-btn" id="stopCheckinCamera">
       Stop Camera
     </button>
 
-    <button class="primary-btn" onclick="scanFrame('checkin')">
+    <button class="primary-btn" id="scanCheckin">
       Scan QR
     </button>
 
@@ -736,20 +727,21 @@ footer{
 
   </div>
 
-
   <div class="card">
 
     <h3>Manual Check-In</h3>
 
     <div class="input-group">
+
       <label>Select Staff</label>
 
       <select id="manualCheckinStaff">
         <option value="">-- Select Staff --</option>
       </select>
+
     </div>
 
-    <button class="success-btn" onclick="manualCheckin()">
+    <button class="success-btn" id="manualCheckinButton">
       Record Check-In
     </button>
 
@@ -760,7 +752,8 @@ footer{
 </section>
 
 
-<!-- ================= CHECK OUT ================= -->
+<!-- CHECK OUT -->
+
 <section id="checkout" class="section">
 
   <div class="card">
@@ -773,15 +766,15 @@ footer{
 
     <br>
 
-    <button class="primary-btn" onclick="startCamera('checkout')">
+    <button class="primary-btn" id="startCheckoutCamera">
       Start Camera
     </button>
 
-    <button class="secondary-btn" onclick="stopCamera('checkout')">
+    <button class="secondary-btn" id="stopCheckoutCamera">
       Stop Camera
     </button>
 
-    <button class="primary-btn" onclick="scanFrame('checkout')">
+    <button class="primary-btn" id="scanCheckout">
       Scan QR
     </button>
 
@@ -791,20 +784,22 @@ footer{
 
   </div>
 
-
   <div class="card">
 
     <h3>Manual Check-Out</h3>
 
     <div class="input-group">
+
       <label>Staff ID</label>
+
       <input
         id="manualCheckoutID"
         type="text"
         placeholder="Enter Staff ID">
+
     </div>
 
-    <button class="success-btn" onclick="manualCheckout()">
+    <button class="success-btn" id="manualCheckoutButton">
       Record Check-Out
     </button>
 
@@ -815,7 +810,8 @@ footer{
 </section>
 
 
-<!-- ================= DAILY REPORT ================= -->
+<!-- REPORT -->
+
 <section id="report" class="section">
 
   <div class="card">
@@ -825,25 +821,26 @@ footer{
     <div class="form-grid">
 
       <div class="input-group">
+
         <label>Date</label>
+
         <input
           id="reportDate"
-          type="date"
-          onchange="renderReport()">
+          type="date">
+
       </div>
 
     </div>
 
-    <button class="primary-btn" onclick="renderReport()">
+    <button class="primary-btn" id="refreshReport">
       Refresh Report
     </button>
 
-    <button class="success-btn" onclick="exportCSV()">
+    <button class="success-btn" id="exportCSVButton">
       Export CSV
     </button>
 
   </div>
-
 
   <div class="dashboard-grid">
 
@@ -869,7 +866,6 @@ footer{
 
   </div>
 
-
   <div class="card">
 
     <div class="table-container">
@@ -877,6 +873,7 @@ footer{
       <table>
 
         <thead>
+
           <tr>
             <th>Date</th>
             <th>Staff ID</th>
@@ -885,6 +882,7 @@ footer{
             <th>Status</th>
             <th>Check-Out</th>
           </tr>
+
         </thead>
 
         <tbody id="reportTableBody"></tbody>
@@ -898,7 +896,8 @@ footer{
 </section>
 
 
-<!-- ================= HISTORY ================= -->
+<!-- HISTORY -->
+
 <section id="history" class="section">
 
   <div class="card">
@@ -919,12 +918,11 @@ footer{
 
     </div>
 
-    <button class="primary-btn" onclick="renderHistory()">
+    <button class="primary-btn" id="searchHistory">
       Search History
     </button>
 
   </div>
-
 
   <div class="card">
 
@@ -933,6 +931,7 @@ footer{
       <table>
 
         <thead>
+
           <tr>
             <th>Date</th>
             <th>Staff ID</th>
@@ -941,6 +940,7 @@ footer{
             <th>Status</th>
             <th>Check-Out</th>
           </tr>
+
         </thead>
 
         <tbody id="historyTableBody"></tbody>
@@ -954,7 +954,8 @@ footer{
 </section>
 
 
-<!-- ================= REGISTER STAFF ================= -->
+<!-- REGISTER -->
+
 <section id="register" class="section">
 
   <div class="card">
@@ -997,12 +998,11 @@ footer{
 
     </div>
 
-    <button class="success-btn" onclick="registerStaff()">
+    <button class="success-btn" id="registerStaffButton">
       Register Staff
     </button>
 
   </div>
-
 
   <div class="card">
 
@@ -1013,6 +1013,7 @@ footer{
       <table>
 
         <thead>
+
           <tr>
             <th>Staff ID</th>
             <th>Name</th>
@@ -1021,6 +1022,7 @@ footer{
             <th>Expected Time</th>
             <th>Action</th>
           </tr>
+
         </thead>
 
         <tbody id="staffTableBody"></tbody>
@@ -1034,7 +1036,8 @@ footer{
 </section>
 
 
-<!-- ================= STAFF QR ================= -->
+<!-- QR -->
+
 <section id="staffQR" class="section">
 
   <div class="card">
@@ -1046,7 +1049,7 @@ footer{
       The QR code contains the Staff ID.
     </p>
 
-    <button class="primary-btn" onclick="generateAllQR()">
+    <button class="primary-btn" id="generateQRButton">
       Generate QR Codes
     </button>
 
@@ -1057,7 +1060,8 @@ footer{
 </section>
 
 
-<!-- ================= ADMIN PANEL ================= -->
+<!-- ADMIN -->
+
 <section id="admin" class="section">
 
   <div class="card">
@@ -1066,27 +1070,31 @@ footer{
 
     <h3>System Statistics</h3>
 
-    <p>Total Staff: <strong id="adminTotalStaff">0</strong></p>
-    <p>Total Attendance Records:
+    <p>
+      Total Staff:
+      <strong id="adminTotalStaff">0</strong>
+    </p>
+
+    <p>
+      Total Attendance Records:
       <strong id="adminTotalAttendance">0</strong>
     </p>
 
   </div>
 
-
   <div class="card">
 
     <h3>Database Management</h3>
 
-    <button class="success-btn" onclick="backupDatabase()">
+    <button class="success-btn" id="backupButton">
       Backup Data
     </button>
 
-    <button class="danger-btn" onclick="clearAttendance()">
+    <button class="danger-btn" id="clearAttendanceButton">
       Clear Attendance
     </button>
 
-    <button class="danger-btn" onclick="resetDatabase()">
+    <button class="danger-btn" id="resetDatabaseButton">
       Reset Database
     </button>
 
@@ -1097,7 +1105,8 @@ footer{
 </section>
 
 
-<!-- ================= ADMIN SETTINGS ================= -->
+<!-- SETTINGS -->
+
 <section id="settings" class="section">
 
   <div class="card">
@@ -1109,38 +1118,56 @@ footer{
     <div class="form-grid">
 
       <div class="input-group">
+
         <label>Admin Username</label>
+
         <input id="newAdminUsername" type="text">
+
       </div>
 
       <div class="input-group">
+
         <label>Admin Password</label>
+
         <input id="newAdminPassword" type="password">
+
       </div>
 
       <div class="input-group">
+
         <label>Company Name</label>
+
         <input id="companyNameInput" type="text">
+
       </div>
 
       <div class="input-group">
+
         <label>Company Tagline</label>
+
         <input id="companyTaglineInput" type="text">
+
       </div>
 
       <div class="input-group">
+
         <label>Work Start Time</label>
+
         <input id="startTimeInput" type="time">
+
       </div>
 
       <div class="input-group">
+
         <label>Late Threshold (minutes)</label>
+
         <input id="lateThresholdInput" type="number" min="0">
+
       </div>
 
     </div>
 
-    <button class="success-btn" onclick="saveAdminSettings()">
+    <button class="success-btn" id="saveSettingsButton">
       Save Settings
     </button>
 
@@ -1150,9 +1177,8 @@ footer{
 
 </main>
 
-
 <footer>
-  Staff Attendance System © 2026
+Staff Attendance System © 2026
 </footer>
 
 </div>
@@ -1161,11 +1187,10 @@ footer{
 <script>
 
 /* =====================================================
-   DATABASE
+DATABASE
 ===================================================== */
 
-const DB_KEY = "staffAttendanceSystemDB_v4";
-
+const DB_KEY="staffAttendanceSystemDB_v4";
 
 function createDefaultDB(){
 
@@ -1174,11 +1199,2434 @@ function createDefaultDB(){
       adminUsername:"admin",
       adminPassword:"admin123",
       companyName:"Staff Attendance System",
-      companyTagline:"Professional Attendance Tracking & Management with QR Code Scanning",
+      companyTagline:
+        "Professional Attendance Tracking & Management with QR Code Scanning",
       startTime:"09:00",
       lateThreshold:15
     },
-
     staff:[],
+    attendance:[]
+  };
 
-    attendan
+}
+
+function loadDB(){
+
+  try{
+
+    const raw=localStorage.getItem(DB_KEY);
+
+    if(!raw){
+      return createDefaultDB();
+    }
+
+    const parsed=JSON.parse(raw);
+
+    if(!parsed || typeof parsed!=="object"){
+      return createDefaultDB();
+    }
+
+    const defaults=createDefaultDB();
+
+    parsed.settings={
+      ...defaults.settings,
+      ...(parsed.settings || {})
+    };
+
+    parsed.staff=
+      Array.isArray(parsed.staff)
+      ? parsed.staff
+      : [];
+
+    parsed.attendance=
+      Array.isArray(parsed.attendance)
+      ? parsed.attendance
+      : [];
+
+    return parsed;
+
+  }catch(error){
+
+    console.warn(error);
+
+    return createDefaultDB();
+
+  }
+
+}
+
+let db=loadDB();
+
+function saveDB(){
+
+  try{
+
+    localStorage.setItem(
+      DB_KEY,
+      JSON.stringify(db)
+    );
+
+  }catch(error){
+
+    alert("Unable to save data in this browser.");
+
+  }
+
+}
+
+
+/* =====================================================
+LOGIN
+===================================================== */
+
+let loginRole="admin";
+let currentUser=null;
+
+
+/* FIXED LOGIN ROLE BUTTONS */
+
+function selectLoginRole(role){
+
+  loginRole=role;
+
+  const adminButton=
+    document.getElementById("adminRoleBtn");
+
+  const staffButton=
+    document.getElementById("staffRoleBtn");
+
+  const adminFields=
+    document.getElementById("adminLoginFields");
+
+  const staffFields=
+    document.getElementById("staffLoginFields");
+
+  if(role==="admin"){
+
+    adminButton.classList.add("selected");
+    staffButton.classList.remove("selected");
+
+    adminFields.classList.remove("hidden");
+    staffFields.classList.add("hidden");
+
+    setTimeout(()=>{
+      document
+        .getElementById("adminUsernameInput")
+        .focus();
+    },50);
+
+  }else{
+
+    staffButton.classList.add("selected");
+    adminButton.classList.remove("selected");
+
+    staffFields.classList.remove("hidden");
+    adminFields.classList.add("hidden");
+
+    setTimeout(()=>{
+      document
+        .getElementById("staffLoginId")
+        .focus();
+    },50);
+
+  }
+
+  document.getElementById(
+    "loginMessage"
+  ).innerHTML="";
+
+}
+
+
+/* FIXED LOGIN FUNCTION */
+
+function login(){
+
+  const message=
+    document.getElementById("loginMessage");
+
+  message.innerHTML="";
+
+
+  /* ADMIN */
+
+  if(loginRole==="admin"){
+
+    const username=
+      document
+      .getElementById("adminUsernameInput")
+      .value
+      .trim();
+
+    const password=
+      document
+      .getElementById("adminPasswordInput")
+      .value;
+
+
+    if(!username){
+
+      message.innerHTML=
+        '<div class="alert alert-error">' +
+        'Please enter the admin username.' +
+        '</div>';
+
+      return;
+
+    }
+
+
+    if(!password){
+
+      message.innerHTML=
+        '<div class="alert alert-error">' +
+        'Please enter the admin password.' +
+        '</div>';
+
+      return;
+
+    }
+
+
+    if(
+      username===String(db.settings.adminUsername) &&
+      password===String(db.settings.adminPassword)
+    ){
+
+      currentUser={
+        role:"admin",
+        username:username
+      };
+
+      openApp();
+
+      return;
+
+    }
+
+
+    message.innerHTML=
+      '<div class="alert alert-error">' +
+      'Incorrect admin username or password.' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  /* STAFF */
+
+  const id=
+    document
+    .getElementById("staffLoginId")
+    .value
+    .trim();
+
+  const password=
+    document
+    .getElementById("staffLoginPassword")
+    .value;
+
+
+  if(!id){
+
+    message.innerHTML=
+      '<div class="alert alert-error">' +
+      'Please enter your Staff ID.' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  if(!password){
+
+    message.innerHTML=
+      '<div class="alert alert-error">' +
+      'Please enter your Staff password.' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  const staff=
+    db.staff.find(
+      s=>
+        String(s.id).toLowerCase()===
+        id.toLowerCase()
+    );
+
+
+  if(
+    staff &&
+    String(staff.password)===String(password)
+  ){
+
+    currentUser={
+      role:"staff",
+      id:staff.id,
+      name:staff.name
+    };
+
+    openApp();
+
+  }else{
+
+    message.innerHTML=
+      '<div class="alert alert-error">' +
+      'Incorrect Staff ID or password.' +
+      '</div>';
+
+  }
+
+}
+
+
+/* =====================================================
+PASSWORD
+===================================================== */
+
+function togglePassword(id,checkbox){
+
+  const input=
+    document.getElementById(id);
+
+  if(!input) return;
+
+  input.type=
+    checkbox.checked
+    ? "text"
+    : "password";
+
+}
+
+
+/* =====================================================
+OPEN APP
+===================================================== */
+
+function openApp(){
+
+  document.getElementById(
+    "loginScreen"
+  ).style.display="none";
+
+  document.getElementById(
+    "app"
+  ).style.display="block";
+
+
+  /* RESTORE ALL NAVIGATION */
+
+  document
+    .querySelectorAll("nav button")
+    .forEach(button=>{
+      button.style.display="";
+    });
+
+
+  if(currentUser.role==="admin"){
+
+    document.getElementById(
+      "welcomeUser"
+    ).textContent=
+      "Welcome, "+currentUser.username;
+
+    document.getElementById(
+      "userRoleDisplay"
+    ).textContent=
+      "Administrator";
+
+
+    showSection(
+      "dashboard",
+      document.getElementById("navDashboard")
+    );
+
+  }else{
+
+    document.getElementById(
+      "welcomeUser"
+    ).textContent=
+      "Welcome, "+currentUser.name;
+
+    document.getElementById(
+      "userRoleDisplay"
+    ).textContent=
+      "Staff • "+currentUser.id;
+
+
+    const adminNavs=[
+      "navDashboard",
+      "navReport",
+      "navHistory",
+      "navRegister",
+      "navQR",
+      "navAdmin",
+      "navSettings"
+    ];
+
+
+    adminNavs.forEach(id=>{
+
+      const element=
+        document.getElementById(id);
+
+      if(element){
+        element.style.display="none";
+      }
+
+    });
+
+
+    const checkinButton=
+      document.querySelector(
+        'nav button[data-section="checkin"]'
+      );
+
+
+    showSection(
+      "checkin",
+      checkinButton
+    );
+
+  }
+
+
+  applyCompanySettings();
+  populateStaffSelect();
+  updateAll();
+
+}
+
+
+/* =====================================================
+LOGOUT
+===================================================== */
+
+function logout(){
+
+  stopCamera("checkin");
+  stopCamera("checkout");
+
+  currentUser=null;
+
+  document.getElementById(
+    "app"
+  ).style.display="none";
+
+  document.getElementById(
+    "loginScreen"
+  ).style.display="flex";
+
+
+  document.getElementById(
+    "adminUsernameInput"
+  ).value="";
+
+  document.getElementById(
+    "adminPasswordInput"
+  ).value="";
+
+  document.getElementById(
+    "staffLoginId"
+  ).value="";
+
+  document.getElementById(
+    "staffLoginPassword"
+  ).value="";
+
+  document.getElementById(
+    "loginMessage"
+  ).innerHTML="";
+
+  selectLoginRole("admin");
+
+}
+
+
+/* =====================================================
+NAVIGATION
+===================================================== */
+
+function showSection(sectionId,button){
+
+  document
+    .querySelectorAll(".section")
+    .forEach(section=>{
+      section.classList.remove("active");
+    });
+
+
+  const section=
+    document.getElementById(sectionId);
+
+  if(!section) return;
+
+  section.classList.add("active");
+
+
+  document
+    .querySelectorAll("nav button")
+    .forEach(btn=>{
+      btn.classList.remove("active");
+    });
+
+
+  if(button){
+    button.classList.add("active");
+  }
+
+
+  if(sectionId==="dashboard"){
+    renderDashboard();
+  }
+
+  if(sectionId==="report"){
+    renderReport();
+  }
+
+  if(sectionId==="history"){
+    renderHistory();
+  }
+
+  if(sectionId==="register"){
+    renderStaffTable();
+  }
+
+  if(sectionId==="staffQR"){
+    generateAllQR();
+  }
+
+  if(sectionId==="admin"){
+    renderAdminPanel();
+  }
+
+  if(sectionId==="settings"){
+    loadAdminSettings();
+  }
+
+}
+
+
+/* =====================================================
+COMPANY
+===================================================== */
+
+function applyCompanySettings(){
+
+  const s=db.settings;
+
+  document.getElementById(
+    "companyNameDisplay"
+  ).textContent=s.companyName;
+
+  document.getElementById(
+    "companyTagline"
+  ).textContent=s.companyTagline;
+
+  document.getElementById(
+    "loginCompanyName"
+  ).textContent=s.companyName;
+
+}
+
+
+/* =====================================================
+DATE / TIME
+===================================================== */
+
+function today(){
+
+  const d=new Date();
+
+  return d.getFullYear()+"-"+
+    String(d.getMonth()+1).padStart(2,"0")+"-"+
+    String(d.getDate()).padStart(2,"0");
+
+}
+
+
+function currentTime(){
+
+  const d=new Date();
+
+  return d.toLocaleTimeString(
+    [],
+    {
+      hour:"2-digit",
+      minute:"2-digit",
+      hour12:false
+    }
+  );
+
+}
+
+
+/* =====================================================
+ATTENDANCE
+===================================================== */
+
+function getStaffById(id){
+
+  return db.staff.find(
+    s=>
+      String(s.id).toLowerCase()===
+      String(id).toLowerCase()
+  );
+
+}
+
+
+function getTodayRecord(staffId){
+
+  return db.attendance.find(
+    r=>
+      r.date===today() &&
+      String(r.staffId).toLowerCase()===
+      String(staffId).toLowerCase()
+  );
+
+}
+
+
+function isLate(time,expectedTime){
+
+  if(!time || !expectedTime){
+    return false;
+  }
+
+  const [h1,m1]=time.split(":").map(Number);
+  const [h2,m2]=expectedTime.split(":").map(Number);
+
+  const actual=h1*60+m1;
+  const expected=h2*60+m2;
+
+  return actual>
+    expected+Number(db.settings.lateThreshold||0);
+
+}
+
+
+function recordCheckIn(staffId){
+
+  const staff=getStaffById(staffId);
+
+  if(!staff){
+
+    return {
+      success:false,
+      message:"Staff ID not found."
+    };
+
+  }
+
+
+  const existing=getTodayRecord(staff.id);
+
+
+  if(existing && existing.checkIn){
+
+    return {
+      success:false,
+      message:
+        staff.name+
+        " has already checked in today."
+    };
+
+  }
+
+
+  const time=currentTime();
+
+  const late=isLate(
+    time,
+    staff.expectedTime||db.settings.startTime
+  );
+
+
+  if(existing){
+
+    existing.checkIn=time;
+    existing.status=late?"Late":"Present";
+
+  }else{
+
+    db.attendance.push({
+
+      date:today(),
+      staffId:staff.id,
+      name:staff.name,
+      checkIn:time,
+      status:late?"Late":"Present",
+      checkOut:""
+
+    });
+
+  }
+
+
+  saveDB();
+  updateAll();
+
+
+  return {
+    success:true,
+    message:
+      staff.name+
+      " checked in at "+
+      time+
+      (late?" — Late":" — Present")
+  };
+
+}
+
+
+function recordCheckOut(staffId){
+
+  const staff=getStaffById(staffId);
+
+  if(!staff){
+
+    return {
+      success:false,
+      message:"Staff ID not found."
+    };
+
+  }
+
+
+  const record=getTodayRecord(staff.id);
+
+
+  if(!record || !record.checkIn){
+
+    return {
+      success:false,
+      message:
+        staff.name+
+        " has not checked in today."
+    };
+
+  }
+
+
+  if(record.checkOut){
+
+    return {
+      success:false,
+      message:
+        staff.name+
+        " has already checked out."
+    };
+
+  }
+
+
+  record.checkOut=currentTime();
+
+  saveDB();
+  updateAll();
+
+
+  return {
+    success:true,
+    message:
+      staff.name+
+      " checked out at "+
+      record.checkOut
+  };
+
+}
+
+
+/* =====================================================
+MANUAL ATTENDANCE
+===================================================== */
+
+function manualCheckin(){
+
+  let id=
+    document
+    .getElementById("manualCheckinStaff")
+    .value;
+
+
+  if(
+    currentUser &&
+    currentUser.role==="staff"
+  ){
+    id=currentUser.id;
+  }
+
+
+  if(!id){
+
+    document.getElementById(
+      "manualCheckinMessage"
+    ).innerHTML=
+      '<div class="alert alert-error">'+
+      'Please select a staff member.'+
+      '</div>';
+
+    return;
+
+  }
+
+
+  const result=recordCheckIn(id);
+
+
+  document.getElementById(
+    "manualCheckinMessage"
+  ).innerHTML=
+    '<div class="alert '+
+    (result.success?"alert-success":"alert-error")+
+    '">'+
+    result.message+
+    '</div>';
+
+}
+
+
+function manualCheckout(){
+
+  let id=
+    document
+    .getElementById("manualCheckoutID")
+    .value
+    .trim();
+
+
+  if(
+    currentUser &&
+    currentUser.role==="staff"
+  ){
+    id=currentUser.id;
+  }
+
+
+  if(!id){
+
+    document.getElementById(
+      "manualCheckoutMessage"
+    ).innerHTML=
+      '<div class="alert alert-error">'+
+      'Please enter a Staff ID.'+
+      '</div>';
+
+    return;
+
+  }
+
+
+  const result=recordCheckOut(id);
+
+
+  document.getElementById(
+    "manualCheckoutMessage"
+  ).innerHTML=
+    '<div class="alert '+
+    (result.success?"alert-success":"alert-error")+
+    '">'+
+    result.message+
+    '</div>';
+
+}
+
+
+/* =====================================================
+CAMERA
+===================================================== */
+
+const cameraStreams={
+  checkin:null,
+  checkout:null
+};
+
+
+async function startCamera(type){
+
+  try{
+
+    const video=
+      document.getElementById(
+        type==="checkin"
+        ?"checkinVideo"
+        :"checkoutVideo"
+      );
+
+
+    if(
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ){
+
+      alert(
+        "Camera is not supported by this browser."
+      );
+
+      return;
+
+    }
+
+
+    const stream=
+      await navigator.mediaDevices.getUserMedia({
+        video:{
+          facingMode:"environment"
+        },
+        audio:false
+      });
+
+
+    cameraStreams[type]=stream;
+
+    video.srcObject=stream;
+
+    await video.play();
+
+
+    document.getElementById(
+      type==="checkin"
+      ?"checkinQRResult"
+      :"checkoutQRResult"
+    ).textContent=
+      "Camera started. Point it at the staff QR code.";
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Camera could not start. Please allow camera permission."
+    );
+
+  }
+
+}
+
+
+function stopCamera(type){
+
+  const stream=cameraStreams[type];
+
+  if(stream){
+
+    stream.getTracks().forEach(
+      track=>track.stop()
+    );
+
+    cameraStreams[type]=null;
+
+  }
+
+}
+
+
+function scanFrame(type){
+
+  const video=
+    document.getElementById(
+      type==="checkin"
+      ?"checkinVideo"
+      :"checkoutVideo"
+    );
+
+
+  if(!video.videoWidth){
+
+    alert("Start the camera first.");
+
+    return;
+
+  }
+
+
+  if(typeof jsQR==="undefined"){
+
+    alert(
+      "QR scanner library has not loaded. Check your internet connection."
+    );
+
+    return;
+
+  }
+
+
+  const canvas=document.createElement("canvas");
+
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+
+
+  const context=canvas.getContext("2d");
+
+  context.drawImage(
+    video,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+
+  const imageData=
+    context.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+  const code=
+    jsQR(
+      imageData.data,
+      imageData.width,
+      imageData.height
+    );
+
+
+  if(!code){
+
+    document.getElementById(
+      type==="checkin"
+      ?"checkinQRResult"
+      :"checkoutQRResult"
+    ).textContent=
+      "No QR code detected. Try again.";
+
+    return;
+
+  }
+
+
+  const staffId=String(code.data).trim();
+
+
+  if(
+    currentUser &&
+    currentUser.role==="staff" &&
+    String(currentUser.id).toLowerCase()!==
+    staffId.toLowerCase()
+  ){
+
+    document.getElementById(
+      type==="checkin"
+      ?"checkinQRResult"
+      :"checkoutQRResult"
+    ).textContent=
+      "You can only use your own QR code.";
+
+    return;
+
+  }
+
+
+  const result=
+    type==="checkin"
+    ?recordCheckIn(staffId)
+    :recordCheckOut(staffId);
+
+
+  document.getElementById(
+    type==="checkin"
+    ?"checkinQRResult"
+    :"checkoutQRResult"
+  ).textContent=result.message;
+
+
+  updateAll();
+
+}
+
+
+/* =====================================================
+REGISTER STAFF
+===================================================== */
+
+function registerStaff(){
+
+  const name=
+    document.getElementById("staffName").value.trim();
+
+  const id=
+    document.getElementById("staffID").value.trim();
+
+  const department=
+    document.getElementById("staffDepartment").value.trim();
+
+  const email=
+    document.getElementById("staffEmail").value.trim();
+
+  const password=
+    document.getElementById("staffPassword").value;
+
+  const expectedTime=
+    document.getElementById("staffExpectedTime").value;
+
+  const message=
+    document.getElementById("registerMessage");
+
+
+  if(!name || !id || !password){
+
+    message.innerHTML=
+      '<div class="alert alert-error">'+
+      'Name, Staff ID and password are required.'+
+      '</div>';
+
+    return;
+
+  }
+
+
+  if(getStaffById(id)){
+
+    message.innerHTML=
+      '<div class="alert alert-error">'+
+      'That Staff ID already exists.'+
+      '</div>';
+
+    return;
+
+  }
+
+
+  db.staff.push({
+
+    name:name,
+    id:id,
+    department:department,
+    email:email,
+    password:password,
+    expectedTime:
+      expectedTime||db.settings.startTime
+
+  });
+
+
+  saveDB();
+
+
+  document.getElementById("staffName").value="";
+  document.getElementById("staffID").value="";
+  document.getElementById("staffDepartment").value="";
+  document.getElementById("staffEmail").value="";
+  document.getElementById("staffPassword").value="";
+  document.getElementById("staffExpectedTime").value="09:00";
+
+
+  message.innerHTML=
+    '<div class="alert alert-success">'+
+    'Staff registered successfully.'+
+    '</div>';
+
+
+  populateStaffSelect();
+  renderStaffTable();
+  updateAll();
+
+}
+
+
+/* =====================================================
+STAFF TABLE
+===================================================== */
+
+function renderStaffTable(){
+
+  const tbody=
+    document.getElementById("staffTableBody");
+
+  if(!tbody)return;
+
+  tbody.innerHTML="";
+
+
+  db.staff.forEach(staff=>{
+
+    const tr=document.createElement("tr");
+
+    tr.innerHTML=`
+
+      <td>${escapeHTML(staff.id)}</td>
+      <td>${escapeHTML(staff.name)}</td>
+      <td>${escapeHTML(staff.department||"")}</td>
+      <td>${escapeHTML(staff.email||"")}</td>
+      <td>${escapeHTML(staff.expectedTime||"")}</td>
+
+      <td>
+        <button
+          class="danger-btn delete-staff-button"
+          data-id="${escapeHTML(staff.id)}">
+          Delete
+        </button>
+      </td>
+
+    `;
+
+    tbody.appendChild(tr);
+
+  });
+
+
+  document
+    .querySelectorAll(".delete-staff-button")
+    .forEach(button=>{
+
+      button.addEventListener(
+        "click",
+        function(){
+
+          deleteStaff(
+            this.getAttribute("data-id")
+          );
+
+        }
+      );
+
+    });
+
+}
+
+
+function deleteStaff(id){
+
+  if(!confirm("Delete this staff member?")){
+    return;
+  }
+
+
+  db.staff=
+    db.staff.filter(
+      s=>String(s.id)!==String(id)
+    );
+
+
+  saveDB();
+
+  populateStaffSelect();
+  renderStaffTable();
+  generateAllQR();
+  updateAll();
+
+}
+
+
+/* =====================================================
+STAFF SELECT
+===================================================== */
+
+function populateStaffSelect(){
+
+  const select=
+    document.getElementById(
+      "manualCheckinStaff"
+    );
+
+  if(!select)return;
+
+
+  select.innerHTML=
+    '<option value="">-- Select Staff --</option>';
+
+
+  db.staff.forEach(staff=>{
+
+    if(
+      currentUser &&
+      currentUser.role==="staff" &&
+      String(currentUser.id).toLowerCase()!==
+      String(staff.id).toLowerCase()
+    ){
+      return;
+    }
+
+
+    const option=document.createElement("option");
+
+    option.value=staff.id;
+
+    option.textContent=
+      staff.name+
+      " ("+
+      staff.id+
+      ")";
+
+
+    select.appendChild(option);
+
+  });
+
+
+  if(
+    currentUser &&
+    currentUser.role==="staff"
+  ){
+
+    select.value=currentUser.id;
+    select.disabled=true;
+
+  }else{
+
+    select.disabled=false;
+
+  }
+
+}
+
+
+/* =====================================================
+QR
+===================================================== */
+
+function generateAllQR(){
+
+  const grid=
+    document.getElementById("qrGrid");
+
+  if(!grid)return;
+
+  grid.innerHTML="";
+
+
+  db.staff.forEach(staff=>{
+
+    const card=document.createElement("div");
+
+    card.className="qr-card";
+
+
+    const title=document.createElement("h3");
+
+    title.textContent=staff.name;
+
+
+    const idText=document.createElement("p");
+
+    idText.textContent=
+      "Staff ID: "+staff.id;
+
+
+    const canvas=document.createElement("canvas");
+
+
+    const download=document.createElement("button");
+
+    download.className="primary-btn";
+
+    download.textContent="Download QR";
+
+
+    download.addEventListener(
+      "click",
+      function(){
+
+        const link=document.createElement("a");
+
+        link.download=
+          staff.id+"-QR.png";
+
+        link.href=
+          canvas.toDataURL("image/png");
+
+        link.click();
+
+      }
+    );
+
+
+    card.appendChild(title);
+    card.appendChild(idText);
+    card.appendChild(canvas);
+    card.appendChild(
+      document.createElement("br")
+    );
+    card.appendChild(download);
+
+    grid.appendChild(card);
+
+
+    if(typeof QRCode!=="undefined"){
+
+      QRCode.toCanvas(
+        canvas,
+        String(staff.id),
+        {
+          width:180,
+          margin:2
+        },
+        function(error){
+
+          if(error){
+            console.error(error);
+          }
+
+        }
+      );
+
+    }
+
+  });
+
+}
+
+
+/* =====================================================
+DASHBOARD
+===================================================== */
+
+function renderDashboard(){
+
+  const date=today();
+
+
+  document.getElementById(
+    "dashboardDate"
+  ).textContent=
+    "Date: "+date;
+
+
+  document.getElementById(
+    "totalStaff"
+  ).textContent=
+    db.staff.length;
+
+
+  const records=
+    db.attendance.filter(
+      r=>r.date===date
+    );
+
+
+  const present=
+    records.filter(
+      r=>r.checkIn
+    ).length;
+
+
+  const late=
+    records.filter(
+      r=>r.status==="Late"
+    ).length;
+
+
+  const checkedOut=
+    records.filter(
+      r=>r.checkOut
+    ).length;
+
+
+  document.getElementById(
+    "totalPresent"
+  ).textContent=present;
+
+  document.getElementById(
+    "totalLate"
+  ).textContent=late;
+
+  document.getElementById(
+    "totalCheckedOut"
+  ).textContent=checkedOut;
+
+
+  const tbody=
+    document.getElementById(
+      "dashboardTableBody"
+    );
+
+  tbody.innerHTML="";
+
+
+  db.staff.forEach(staff=>{
+
+    const record=
+      records.find(
+        r=>
+          String(r.staffId).toLowerCase()===
+          String(staff.id).toLowerCase()
+      );
+
+
+    const tr=document.createElement("tr");
+
+
+    let status=
+      '<span class="badge badge-absent">Absent</span>';
+
+
+    if(record && record.checkIn){
+
+      status=
+        record.status==="Late"
+        ?'<span class="badge badge-late">Late</span>'
+        :'<span class="badge badge-present">Present</span>';
+
+    }
+
+
+    if(record && record.checkOut){
+
+      status+=
+        ' <span class="badge badge-out">Out</span>';
+
+    }
+
+
+    tr.innerHTML=`
+
+      <td>${escapeHTML(staff.id)}</td>
+
+      <td>${escapeHTML(staff.name)}</td>
+
+      <td>${escapeHTML(record?.checkIn||"-")}</td>
+
+      <td>${status}</td>
+
+      <td>${escapeHTML(record?.checkOut||"-")}</td>
+
+    `;
+
+
+    tbody.appendChild(tr);
+
+  });
+
+}
+
+
+/* =====================================================
+REPORT
+===================================================== */
+
+function renderReport(){
+
+  const dateInput=
+    document.getElementById("reportDate");
+
+
+  if(!dateInput.value){
+    dateInput.value=today();
+  }
+
+
+  const date=dateInput.value;
+
+
+  const records=
+    db.attendance.filter(
+      r=>r.date===date
+    );
+
+
+  const present=
+    records.filter(
+      r=>r.checkIn
+    ).length;
+
+
+  const late=
+    records.filter(
+      r=>r.status==="Late"
+    ).length;
+
+
+  const checkedOut=
+    records.filter(
+      r=>r.checkOut
+    ).length;
+
+
+  const absent=
+    Math.max(
+      0,
+      db.staff.length-present
+    );
+
+
+  document.getElementById(
+    "reportPresent"
+  ).textContent=present;
+
+  document.getElementById(
+    "reportLate"
+  ).textContent=late;
+
+  document.getElementById(
+    "reportAbsent"
+  ).textContent=absent;
+
+  document.getElementById(
+    "reportCheckedOut"
+  ).textContent=checkedOut;
+
+
+  const tbody=
+    document.getElementById(
+      "reportTableBody"
+    );
+
+  tbody.innerHTML="";
+
+
+  db.staff.forEach(staff=>{
+
+    const record=
+      records.find(
+        r=>
+          String(r.staffId).toLowerCase()===
+          String(staff.id).toLowerCase()
+      );
+
+
+    const tr=document.createElement("tr");
+
+
+    const status=
+      record && record.checkIn
+      ?record.status
+      :"Absent";
+
+
+    tr.innerHTML=`
+
+      <td>${escapeHTML(date)}</td>
+      <td>${escapeHTML(staff.id)}</td>
+      <td>${escapeHTML(staff.name)}</td>
+      <td>${escapeHTML(record?.checkIn||"-")}</td>
+      <td>${escapeHTML(status)}</td>
+      <td>${escapeHTML(record?.checkOut||"-")}</td>
+
+    `;
+
+
+    tbody.appendChild(tr);
+
+  });
+
+}
+
+
+/* =====================================================
+HISTORY
+===================================================== */
+
+function renderHistory(){
+
+  const tbody=
+    document.getElementById(
+      "historyTableBody"
+    );
+
+  if(!tbody)return;
+
+
+  const from=
+    document.getElementById(
+      "historyFrom"
+    ).value;
+
+  const to=
+    document.getElementById(
+      "historyTo"
+    ).value;
+
+
+  let records=[...db.attendance];
+
+
+  if(from){
+
+    records=
+      records.filter(
+        r=>r.date>=from
+      );
+
+  }
+
+
+  if(to){
+
+    records=
+      records.filter(
+        r=>r.date<=to
+      );
+
+  }
+
+
+  records.sort(
+    (a,b)=>
+      b.date.localeCompare(a.date)
+  );
+
+
+  tbody.innerHTML="";
+
+
+  records.forEach(record=>{
+
+    const tr=document.createElement("tr");
+
+
+    tr.innerHTML=`
+
+      <td>${escapeHTML(record.date)}</td>
+      <td>${escapeHTML(record.staffId)}</td>
+      <td>${escapeHTML(record.name)}</td>
+      <td>${escapeHTML(record.checkIn||"-")}</td>
+      <td>${escapeHTML(record.status||"-")}</td>
+      <td>${escapeHTML(record.checkOut||"-")}</td>
+
+    `;
+
+
+    tbody.appendChild(tr);
+
+  });
+
+}
+
+
+/* =====================================================
+ADMIN
+===================================================== */
+
+function renderAdminPanel(){
+
+  document.getElementById(
+    "adminTotalStaff"
+  ).textContent=db.staff.length;
+
+  document.getElementById(
+    "adminTotalAttendance"
+  ).textContent=db.attendance.length;
+
+}
+
+
+function backupDatabase(){
+
+  const data=
+    JSON.stringify(db,null,2);
+
+  const blob=
+    new Blob(
+      [data],
+      {type:"application/json"}
+    );
+
+  const url=
+    URL.createObjectURL(blob);
+
+  const link=document.createElement("a");
+
+  link.href=url;
+
+  link.download=
+    "staff-attendance-backup-"+
+    today()+
+    ".json";
+
+  link.click();
+
+  setTimeout(
+    ()=>URL.revokeObjectURL(url),
+    1000
+  );
+
+}
+
+
+function clearAttendance(){
+
+  if(!confirm(
+    "Clear ALL attendance records?"
+  )){
+    return;
+  }
+
+
+  db.attendance=[];
+
+  saveDB();
+
+  updateAll();
+
+
+  document.getElementById(
+    "adminMessage"
+  ).innerHTML=
+    '<div class="alert alert-success">'+
+    'All attendance records have been cleared.'+
+    '</div>';
+
+}
+
+
+function resetDatabase(){
+
+  const answer=
+    prompt(
+      "Type RESET to completely reset the system."
+    );
+
+
+  if(answer!=="RESET"){
+    return;
+  }
+
+
+  db=createDefaultDB();
+
+  saveDB();
+
+
+  alert(
+    "System reset successfully. Default admin login is admin / admin123."
+  );
+
+
+  location.reload();
+
+}
+
+
+/* =====================================================
+SETTINGS
+===================================================== */
+
+function loadAdminSettings(){
+
+  const s=db.settings;
+
+
+  document.getElementById(
+    "newAdminUsername"
+  ).value=s.adminUsername;
+
+  document.getElementById(
+    "newAdminPassword"
+  ).value=s.adminPassword;
+
+  document.getElementById(
+    "companyNameInput"
+  ).value=s.companyName;
+
+  document.getElementById(
+    "companyTaglineInput"
+  ).value=s.companyTagline;
+
+  document.getElementById(
+    "startTimeInput"
+  ).value=s.startTime;
+
+  document.getElementById(
+    "lateThresholdInput"
+  ).value=s.lateThreshold;
+
+}
+
+
+function saveAdminSettings(){
+
+  const username=
+    document
+    .getElementById("newAdminUsername")
+    .value
+    .trim();
+
+  const password=
+    document
+    .getElementById("newAdminPassword")
+    .value;
+
+  const companyName=
+    document
+    .getElementById("companyNameInput")
+    .value
+    .trim();
+
+  const tagline=
+    document
+    .getElementById("companyTaglineInput")
+    .value
+    .trim();
+
+  const startTime=
+    document
+    .getElementById("startTimeInput")
+    .value;
+
+  const lateThreshold=
+    Number(
+      document
+      .getElementById("lateThresholdInput")
+      .value
+    );
+
+
+  if(!username || !password){
+
+    document.getElementById(
+      "settingsMessage"
+    ).innerHTML=
+      '<div class="alert alert-error">'+
+      'Admin username and password cannot be empty.'+
+      '</div>';
+
+    return;
+
+  }
+
+
+  db.settings.adminUsername=username;
+  db.settings.adminPassword=password;
+
+  db.settings.companyName=
+    companyName||"Staff Attendance System";
+
+  db.settings.companyTagline=
+    tagline||
+    "Professional Attendance Tracking & Management with QR Code Scanning";
+
+  db.settings.startTime=
+    startTime||"09:00";
+
+  db.settings.lateThreshold=
+    isNaN(lateThreshold)
+    ?15
+    :lateThreshold;
+
+
+  saveDB();
+
+  applyCompanySettings();
+
+
+  document.getElementById(
+    "settingsMessage"
+  ).innerHTML=
+    '<div class="alert alert-success">'+
+    'Admin settings saved successfully.'+
+    '</div>';
+
+
+  if(currentUser){
+
+    currentUser.username=username;
+
+    document.getElementById(
+      "welcomeUser"
+    ).textContent=
+      "Welcome, "+username;
+
+  }
+
+}
+
+
+/* =====================================================
+CSV
+===================================================== */
+
+function exportCSV(){
+
+  const date=
+    document.getElementById(
+      "reportDate"
+    ).value||today();
+
+
+  const rows=[];
+
+
+  rows.push([
+    "Date",
+    "Staff ID",
+    "Name",
+    "Check-In",
+    "Status",
+    "Check-Out"
+  ]);
+
+
+  db.staff.forEach(staff=>{
+
+    const record=
+      getRecordForDate(
+        staff.id,
+        date
+      );
+
+
+    rows.push([
+      date,
+      staff.id,
+      staff.name,
+      record?.checkIn||"",
+      record?.status||"Absent",
+      record?.checkOut||""
+    ]);
+
+  });
+
+
+  const csv=
+    rows.map(
+      row=>
+        row.map(
+          value=>
+            '"'+
+            String(value)
+            .replace(/"/g,'""')+
+            '"'
+        ).join(",")
+    ).join("\n");
+
+
+  const blob=
+    new Blob(
+      [csv],
+      {
+        type:"text/csv;charset=utf-8;"
+      }
+    );
+
+
+  const url=
+    URL.createObjectURL(blob);
+
+  const link=
+    document.createElement("a");
+
+  link.href=url;
+
+  link.download=
+    "attendance-report-"+
+    date+
+    ".csv";
+
+  link.click();
+
+
+  setTimeout(
+    ()=>URL.revokeObjectURL(url),
+    1000
+  );
+
+}
+
+
+function getRecordForDate(staffId,date){
+
+  return db.attendance.find(
+    r=>
+      r.date===date &&
+      String(r.staffId).toLowerCase()===
+      String(staffId).toLowerCase()
+  );
+
+}
+
+
+/* =====================================================
+UPDATE
+===================================================== */
+
+function updateAll(){
+
+  renderDashboard();
+  renderReport();
+  renderStaffTable();
+  renderAdminPanel();
+  populateStaffSelect();
+
+}
+
+
+/* =====================================================
+HELPERS
+===================================================== */
+
+function escapeHTML(value){
+
+  return String(value??"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* =====================================================
+ALL BUTTON CONNECTIONS
+THIS IS THE IMPORTANT FIX
+===================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function(){
+
+    /* LOGIN ROLE BUTTONS */
+
+    document
+      .getElementById("adminRoleBtn")
+      .addEventListener(
+        "click",
+        function(){
+          selectLoginRole("admin");
+        }
+      );
+
+
+    document
+      .getElementById("staffRoleBtn")
+      .addEventListener(
+        "click",
+        function(){
+          selectLoginRole("staff");
+        }
+      );
+
+
+    /* LOGIN BUTTON */
+
+    document
+      .getElementById("loginButton")
+      .addEventListener(
+        "click",
+        function(event){
+
+          event.preventDefault();
+
+          login();
+
+        }
+      );
+
+
+    /* PASSWORD CHECKBOXES */
+
+    document
+      .getElementById("adminShowPassword")
+      .addEventListener(
+        "change",
+        function(){
+          togglePassword(
+            "adminPasswordInput",
+            this
+          );
+        }
+      );
+
+
+    document
+      .getElementById("staffShowPassword")
+      .addEventListener(
+        "change",
+        function(){
+          togglePassword(
+            "staffLoginPassword",
+            this
+          );
+        }
+      );
+
+
+    /* ENTER KEY */
+
+    document
+      .querySelectorAll(
+        "#loginScreen input"
+      )
+      .forEach(input=>{
+
+        input.addEventListener(
+          "keydown",
+          function(event){
+
+            if(event.key==="Enter"){
+
+              event.preventDefault();
+
+              login();
+
+            }
+
+          }
+        );
+
+      });
+
+
+    /* NAVIGATION */
+
+    document
+      .getElementById("navDashboard")
+      .addEventListener(
+        "click",
+        function(){
+          showSection(
+            "dashboard",
+            this
+          );
+        }
+      );
+
+
+    document
+      .querySelectorAll(
+        "nav button[data-section]"
+      )
+      .forEach(button=>{
+
+        button.addEventListener(
+          "click",
+          function(){
+
+            showSection(
+              this.dataset.section,
+              this
+            );
+
+          }
+        );
+
+      });
+
+
+    document
+      .getElementById("logoutButton")
+      .addEventListener(
+        "click",
+        logout
+      );
+
+
+    /* CAMERA */
+
+    document
+      .getElementById("startCheckinCamera")
+      .addEventListener(
+        "click",
+        ()=>startCamera("checkin")
+      );
+
+
+    document
+      .getElementById("stopCheckinCamera")
+      .addEventListener(
+        "click",
+        ()=>stopCamera("checkin")
+      );
+
+
+    document
+      .getElementById("scanCheckin")
+      .addEventListener(
+        "click",
+        ()=>scanFrame("checkin")
+      );
+
+
+    document
+      .getElementById("startCheckoutCamera")
+      .addEventListener(
+        "click",
+        ()=>startCamera("checkout")
+      );
+
+
+    document
+      .getElementById("stopCheckoutCamera")
+      .addEventListener(
+        "click",
+        ()=>stopCamera("checkout")
+      );
+
+
+    document
+      .getElementById("scanCheckout")
+      .addEventListener(
+        "click",
+        ()=>scanFrame("checkout")
+      );
+
+
+    /* ATTENDANCE */
+
+    document
+      .getElementById("manualCheckinButton")
+      .addEventListener(
+        "click",
+        manualCheckin
+      );
+
+
+    document
+      .getElementById("manualCheckoutButton")
+      .addEventListener(
+        "click",
+        manualCheckout
+      );
+
+
+    /* REPORT */
+
+    document
+      .getElementById("refreshReport")
+      .addEventListener(
+        "click",
+        renderReport
+      );
+
+
+    document
+      .getElementById("reportDate")
+      .addEventListener(
+        "change",
+        renderReport
+      );
+
+
+    document
+      .getElementById("exportCSVButton")
+      .addEventListener(
+        "click",
+        exportCSV
+      );
+
+
+    /* HISTORY */
+
+    document
+      .getElementById("searchHistory")
+      .addEventListener(
+        "click",
+        renderHistory
+      );
+
+
+    /* STAFF */
+
+    document
+      .getElementById("registerStaffButton")
+      .addEventListener(
+        "click",
+        registerStaff
+      );
+
+
+    /* QR */
+
+    document
+      .getElementById("generateQRButton")
+      .addEventListener(
+        "click",
+        generateAllQR
+      );
+
+
+    /* ADMIN */
+
+    document
+      .getElementById("backupButton")
+      .addEventListener(
+        "click",
+        backupDatabase
+      );
+
+
+    document
+      .getElementById("clearAttendanceButton")
+      .addEventListener(
+        "click",
+        clearAttendance
+      );
+
+
+    document
+      .getElementById("resetDatabaseButton")
+      .addEventListener(
+        "click",
+        resetDatabase
+      );
+
+
+    /* SETTINGS */
+
+    document
+      .getElementById("saveSettingsButton")
+      .addEventListener(
+        "click",
+        saveAdminSettings
+      );
+
+
+    /* DATES */
+
+    const reportDate=
+      document.getElementById(
+        "reportDate"
+      );
+
+    if(reportDate){
+      reportDate.value=today();
+    }
+
+
+    const historyTo=
+      document.getElementById(
+        "historyTo"
+      );
+
+    if(historyTo){
+      historyTo.value=today();
+    }
+
+
+    const historyFrom=
+      document.getElementById(
+        "historyFrom"
+      );
+
+
+    if(historyFrom){
+
+      const d=new Date();
+
+      d.setDate(
+        d.getDate()-7
+      );
+
+
+      historyFrom.value=
+        d.getFullYear()+"-"+
+        String(d.getMonth()+1).padStart(2,"0")+"-"+
+        String(d.getDate()).padStart(2,"0");
+
+    }
+
+
+    /* START ON ADMIN ROLE */
+
+    selectLoginRole("admin");
+
+    applyCompanySettings();
+
+  }
+);
+
+</script>
+
+</body>
+</html>
