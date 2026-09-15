@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Attendance System</title>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f2f5f9;
+  color:#172033;
+}
+
+header{
+  background:#123c69;
+  color:white;
+  padding:18px;
+  text-align:center;
+}
+
+header h1{margin:0 0 6px}
+header p{margin:0;font-size:14px}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:18px;
+}
+
+.card{
+  background:white;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:18px;
+  box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+.hidden{display:none!important}
+
+h2,h3{margin-top:0}
+
+input,select,button{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border-radius:8px;
+  border:1px solid #ccd4df;
+  font-size:15px;
+}
+
+button{
+  background:#123c69;
+  color:white;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+button:hover{opacity:.9}
+
+.btn-secondary{background:#607080}
+.btn-danger{background:#b42318}
+.btn-success{background:#16803c}
+.btn-warning{background:#b77900}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.stat{
+  padding:18px;
+  border-radius:10px;
+  background:#eef4fa;
+  text-align:center;
+}
+
+.stat strong{
+  display:block;
+  font-size:28px;
+  margin-top:5px;
+}
+
+.tabs{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  margin-bottom:18px;
+}
+
+.tabs button{
+  font-size:12px;
+  padding:10px 5px;
+}
+
+.tabs button.active{background:#16803c}
+
+video{
+  width:100%;
+  max-height:350px;
+  background:#111;
+  border-radius:10px;
+}
+
+canvas{display:none}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th,td{
+  border:1px solid #ddd;
+  padding:9px;
+  text-align:left;
+  font-size:13px;
+}
+
+th{
+  background:#123c69;
+  color:white;
+}
+
+.table-wrap{overflow-x:auto}
+
+.message{
+  padding:12px;
+  border-radius:8px;
+  margin:10px 0;
+  display:none;
+}
+
+.success{background:#e6f7ed;color:#126331}
+.error{background:#fdebea;color:#9b1c1c}
+
+.qr-box{
+  text-align:center;
+  padding:15px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+.qr-box canvas{
+  display:inline-block;
+}
+
+.login{
+  max-width:430px;
+  margin:60px auto;
+}
+
+.small{
+  font-size:12px;
+  color:#667085;
+}
+
+footer{
+  text-align:center;
+  padding:25px;
+  color:#667085;
+  font-size:13px;
+}
+
+@media(max-width:800px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .tabs{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:500px){
+  .grid{grid-template-columns:1fr 1fr}
+  .container{padding:10px}
+  .card{padding:15px}
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<section id="loginPage" class="container">
+  <div class="card login">
+    <h1>Staff Attendance System</h1>
+    <p>Sign in to continue</p>
+
+    <div id="loginMessage" class="message"></div>
+
+    <select id="loginType">
+      <option value="admin">Admin Login</option>
+      <option value="staff">Staff Login</option>
+    </select>
+
+    <input id="loginUsername" placeholder="Username / Staff ID">
+    <input id="loginPassword" type="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+
+    <p class="small">
+      Default Admin Login:<br>
+      Username: <b>admin</b><br>
+      Password: <b>admin123</b>
+    </p>
+  </div>
+</section>
+
+<!-- APPLICATION -->
+<section id="appPage" class="hidden">
+
+<header>
+  <h1>Staff Attendance System</h1>
+  <p>Professional Attendance Tracking & Management with QR Code Scanning</p>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <b id="welcomeText"></b>
+    <button class="btn-secondary" onclick="logout()">Logout</button>
+  </div>
+
+  <div id="adminTabs" class="tabs">
+    <button onclick="showPage('checkin')">QR Check-In</button>
+    <button onclick="showPage('checkout')">QR Check-Out</button>
+    <button onclick="showPage('report')">Daily Report</button>
+    <button onclick="showPage('history')">History</button>
+    <button onclick="showPage('register')">Register Staff</button>
+    <button onclick="showPage('admin')">Admin Panel</button>
+    <button onclick="showPage('settings')">Settings</button>
+  </div>
+
+  <div id="staffTabs" class="tabs hidden">
+    <button onclick="showPage('checkin')">Check-In</button>
+    <button onclick="showPage('checkout')">Check-Out</button>
+    <button onclick="showPage('report')">My Attendance</button>
+  </div>
+
+  <!-- CHECK IN -->
+  <div id="checkinPage" class="card page">
+    <h2>QR Check-In</h2>
+
+    <div id="checkinMessage" class="message"></div>
+
+    <video id="checkinVideo" autoplay playsinline></video>
+    <canvas id="checkinCanvas"></canvas>
+
+    <button onclick="startScanner('checkin')">Start Camera</button>
+    <button class="btn-secondary" onclick="stopScanner()">Stop Camera</button>
+
+    <h3>Manual Check-In</h3>
+
+    <select id="checkinStaff">
+      <option value="">Select Staff</option>
+    </select>
+
+    <button class="btn-success" onclick="manualCheckIn()">Record Check-In</button>
+  </div>
+
+  <!-- CHECK OUT -->
+  <div id="checkoutPage" class="card page hidden">
+    <h2>QR Check-Out</h2>
+
+    <div id="checkoutMessage" class="message"></div>
+
+    <video id="checkoutVideo" autoplay playsinline></video>
+    <canvas id="checkoutCanvas"></canvas>
+
+    <button onclick="startScanner('checkout')">Start Camera</button>
+    <button class="btn-secondary" onclick="stopScanner()">Stop Camera</button>
+
+    <h3>Manual Check-Out</h3>
+
+    <select id="checkoutStaff">
+      <option value="">Select Staff</option>
+    </select>
+
+    <button class="btn-success" onclick="manualCheckOut()">Record Check-Out</button>
+  </div>
+
+  <!-- REPORT -->
+  <div id="reportPage" class="card page hidden">
+    <h2>Daily Attendance Report</h2>
+
+    <div class="grid">
+      <div class="stat">Total Present<strong id="totalPresent">0</strong></div>
+      <div class="stat">Late Arrivals<strong id="lateCount">0</strong></div>
+      <div class="stat">Absent<strong id="absentCount">0</strong></div>
+      <div class="stat">Checked Out<strong id="checkedOut">0</strong></div>
+    </div>
+
+    <button onclick="refreshReport()">Refresh Report</button>
+    <button class="btn-success" onclick="exportCSV()">Export CSV</button>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Check-In</th>
+            <th>Status</th>
+            <th>Check-Out</th>
+          </tr>
+        </thead>
+        <tbody id="reportTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="historyPage" class="card page hidden">
+    <h2>Attendance History</h2>
+
+    <input type="date" id="historyDate">
+
+    <button onclick="loadHistory()">Search History</button>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Check-In</th>
+            <th>Status</th>
+            <th>Check-Out</th>
+          </tr>
+        </thead>
+        <tbody id="historyTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="registerPage" class="card page hidden">
+    <h2>Register Staff</h2>
+
+    <div id="registerMessage" class="message"></div>
+
+    <input id="staffName" placeholder="Full Name">
+    <input id="staffId" placeholder="Staff ID">
+    <input id="staffDepartment" placeholder="Department">
+    <input id="staffEmail" type="email" placeholder="Email Address">
+    <input id="staffPassword" type="password" placeholder="Staff Password">
+    <input id="staffTime" type="time" value="09:00">
+
+    <button class="btn-success" onclick="registerStaff()">Register Staff</button>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="adminPage" class="card page hidden">
+    <h2>Admin Panel</h2>
+
+    <h3>Registered Staff</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Department</th>
+            <th>Expected Time</th>
+            <th>QR Code</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="staffTable"></tbody>
+      </table>
+    </div>
+
+    <hr>
+
+    <h3>System Tools</h3>
+
+    <button onclick="backupData()">Backup Data</button>
+    <button class="btn-warning" onclick="restoreData()">Restore Data</button>
+    <button class="btn-danger" onclick="clearAttendance()">Clear Attendance Records</button>
+    <button class="btn-danger" onclick="resetSystem()">Reset System</button>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="settingsPage" class="card page hidden">
+    <h2>Admin Settings</h2>
+
+    <div id="settingsMessage" class="message"></div>
+
+    <input id="newAdminUsername" placeholder="New Admin Username">
+    <input id="newAdminPassword" type="password" placeholder="New Admin Password">
+
+    <button onclick="changeAdminSettings()">Save Admin Settings</button>
+
+    <hr>
+
+    <h3>Working Hours</h3>
+    <input id="workStart" type="time" value="09:00">
+    <input id="lateThreshold" type="number" value="15" min="0" placeholder="Late threshold in minutes">
+
+    <button onclick="saveWorkSettings()">Save Work Settings</button>
+  </div>
+
+</div>
+
+<footer>
+  Staff Attendance System © 2026
+</footer>
+
+</section>
+
+<script>
+/* =========================
+   DATABASE
+========================= */
+
+const STAFF_KEY = "attendance_staff";
+const ATTENDANCE_KEY = "attendance_records";
+const ADMIN_KEY = "attendance_admin";
+const SETTINGS_KEY = "attendance_settings";
+
+let staff = JSON.parse(localStorage.getItem(STAFF_KEY) || "[]");
+let attendance = JSON.parse(localStorage.getItem(ATTENDANCE_KEY) || "[]");
+
+let admin = JSON.parse(
+  localStorage.getItem(ADMIN_KEY) ||
+  '{"username":"admin","password":"admin123"}'
+);
+
+let settings = JSON.parse(
+  localStorage.getItem(SETTINGS_KEY) ||
+  '{"workStart":"09:00","lateThreshold":15}'
+);
+
+let currentUser = null;
+let stream = null;
+let scannerType = null;
+
+/* =========================
+   STORAGE
+========================= */
+
+function saveAll(){
+  localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+  localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(attendance));
+  localStorage.setItem(ADMIN_KEY, JSON.stringify(admin));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+/* =========================
+   LOGIN
+========================= */
+
+function login(){
+
+  const type = document.getElementById("loginType").value;
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  if(type === "admin"){
+
+    if(username === admin.username && password === admin.password){
+      currentUser = {
+        type:"admin",
+        username:username
+      };
+
+      openApp();
+      return;
+    }
+
+    showMessage("loginMessage","Incorrect admin username or password.","error");
+    return;
+  }
+
+  const person = staff.find(
+    s => s.id.toLowerCase() === username.toLowerCase() &&
+         s.password === password
+  );
+
+  if(!person){
+    showMessage("loginMessage","Incorrect Staff ID or password.","error");
+    return;
+  }
+
+  currentUser = {
+    type:"staff",
+    id:person.id,
+    name:person.name
+  };
+
+  openApp();
+}
+
+function openApp(){
+
+  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById("appPage").classList.remove("hidden");
+
+  document.getElementById("welcomeText").textContent =
+    "Welcome, " + (currentUser.name || currentUser.username);
+
+  if(currentUser.type === "admin"){
+    document.getElementById("adminTabs").classList.remove("hidden");
+    document.getElementById("staffTabs").classList.add("hidden");
+  }else{
+    document.getElementById("adminTabs").classList.add("hidden");
+    document.getElementById("staffTabs").classList.remove("hidden");
+  }
+
+  populateStaffLists();
+  refreshReport();
+
+  showPage("report");
+}
+
+function logout(){
+  stopScanner();
+
+  currentUser = null;
+
+  document.getElementById("appPage").classList.add("hidden");
+  document.getElementById("loginPage").classList.remove("hidden");
+
+  document.getElementById("loginUsername").value="";
+  document.getElementById("loginPassword").value="";
+}
+
+/* =========================
+   PAGES
+========================= */
+
+function showPage(page){
+
+  document.querySelectorAll(".page").forEach(
+    p => p.classList.add("hidden")
+  );
+
+  const target = document.getElementById(page+"Page");
+
+  if(target){
+    target.classList.remove("hidden");
+  }
+
+  stopScanner();
+
+  if(page === "report") refreshReport();
+  if(page === "admin") loadStaffTable();
+  if(page === "history") loadHistory();
+  if(page === "register") populateStaffLists();
+}
+
+/* =========================
+   MESSAGES
+========================= */
+
+function showMessage(id,text,type){
+
+  const el = document.getElementById(id);
+
+  el.textContent = text;
+  el.className = "message " + type;
+  el.style.display = "block";
+
+  setTimeout(()=>{
+    el.style.display="none";
+  },4000);
+}
+
+/* =========================
+   STAFF
+========================= */
+
+function registerStaff(){
+
+  if(currentUser?.type !== "admin") return;
+
+  const name = document.getElementById("staffName").value.trim();
+  const id = document.getElementById("staffId").value.trim();
+  const department = document.getElementById("staffDepartment").value.trim();
+  const email = document.getElementById("staffEmail").value.trim();
+  const password = document.getElementById("staffPassword").value;
+  const expected = document.getElementById("staffTime").value || "09:00";
+
+  if(!name || !id || !password){
+
+    showMessage(
+      "registerMessage",
+      "Please enter the staff name, Staff ID and password.",
+      "error"
+    );
+
+    return;
+  }
+
+  if(staff.some(s => s.id.toLowerCase() === id.toLowerCase())){
+
+    showMessage(
+      "registerMessage",
+      "That Staff ID already exists.",
+      "error"
+    );
+
+    return;
+  }
+
+  staff.push({
+    name,
+    id,
+    department,
+    email,
+    password,
+    expected
+  });
+
+  saveAll();
+
+  document.getElementById("staffName").value="";
+  document.getElementById("staffId").value="";
+  document.getElementById("staffDepartment").value="";
+  document.getElementById("staffEmail").value="";
+  document.getElementById("staffPassword").value="";
+
+  populateStaffLists();
+  loadStaffTable();
+
+  showMessage(
+    "registerMessage",
+    "Staff registered successfully.",
+    "success"
+  );
+}
+
+function populateStaffLists(){
+
+  const checkin = document.getElementById("checkinStaff");
+  const checkout = document.getElementById("checkoutStaff");
+
+  checkin.innerHTML='<option value="">Select Staff</option>';
+  checkout.innerHTML='<option value="">Select Staff</option>';
+
+  staff.forEach(s=>{
+
+    if(currentUser?.type === "staff" && s.id !== currentUser.id){
+      return;
+    }
+
+    const option1=document.createElement("option");
+    option1.value=s.id;
+    option1.textContent=s.name+" ("+s.id+")";
+
+    const option2=option1.cloneNode(true);
+
+    checkin.appendChild(option1);
+    checkout.appendChild(option2);
+  });
+}
+
+/* =========================
+   ATTENDANCE
+========================= */
+
+function today(){
+
+  const d=new Date();
+
+  return d.getFullYear()+"-"+
+    String(d.getMonth()+1).padStart(2,"0")+"-"+
+    String(d.getDate()).padStart(2,"0");
+}
+
+function currentTime(){
+
+  const d=new Date();
+
+  return String(d.getHours()).padStart(2,"0")+":"+
+         String(d.getMinutes()).padStart(2,"0")+":"+
+         String(d.getSeconds()).padStart(2,"0");
+}
+
+function getStaff(id){
+  return staff.find(s=>s.id===id);
+}
+
+function getTodayRecord(id){
+
+  return attendance.find(
+    r => r.staffId === id && r.date === today()
+  );
+}
+
+function calculateStatus(person,time){
+
+  const expected = person.expected || settings.workStart || "09:00";
+
+  const [eh,em]=expected.split(":").map(Number);
+  const [ah,am]=time.split(":").map(Number);
+
+  const expectedMinutes=eh*60+em;
+  const arrivalMinutes=ah*60+am;
+
+  const difference=arrivalMinutes-expectedMinutes;
+
+  if(difference > Number(settings.lateThreshold)){
+    return "Late";
+  }
+
+  return "Present";
+}
+
+function manualCheckIn(){
+
+  const id=document.getElementById("checkinStaff").value;
+
+  if(!id){
+    showMessage("checkinMessage","Select a staff member.","error");
+    return;
+  }
+
+  recordCheckIn(id);
+}
+
+function recordCheckIn(id){
+
+  const person=getStaff(id);
+
+  if(!person){
+    showMessage("checkinMessage","Staff not found.","error");
+    return;
+  }
+
+  if(currentUser?.type==="staff" && currentUser.id!==id){
+    showMessage("checkinMessage","You can only check in yourself.","error");
+    return;
+  }
+
+  if(getTodayRecord(id)){
+
+    showMessage(
+      "checkinMessage",
+      person.name+" has already checked in today.",
+      "error"
+    );
+
+    return;
+  }
+
+  const time=currentTime();
+
+  attendance.push({
+    staffId:id,
+    name:person.name,
+    date:today(),
+    checkIn:time,
+    status:calculateStatus(person,time),
+    checkOut:""
+  });
+
+  saveAll();
+  refreshReport();
+
+  showMessage(
+    "checkinMessage",
+    person.name+" checked in successfully at "+time,
+    "success"
+  );
+}
+
+function manualCheckOut(){
+
+  const id=document.getElementById("checkoutStaff").value;
+
+  if(!id){
+    showMessage("checkoutMessage","Select a staff member.","error");
+    return;
+  }
+
+  recordCheckOut(id);
+}
+
+function recordCheckOut(id){
+
+  const person=getStaff(id);
+
+  if(!person){
+    showMessage("checkoutMessage","Staff not found.","error");
+    return;
+  }
+
+  if(currentUser?.type==="staff" && currentUser.id!==id){
+    showMessage("checkoutMessage","You can only check out yourself.","error");
+    return;
+  }
+
+  const record=getTodayRecord(id);
+
+  if(!record){
+
+    showMessage(
+      "checkoutMessage",
+      "This staff member has not checked in today.",
+      "error"
+    );
+
+    return;
+  }
+
+  if(record.checkOut){
+
+    showMessage(
+      "checkoutMessage",
+      "This staff member has already checked out.",
+      "error"
+    );
+
+    return;
+  }
+
+  const time=currentTime();
+
+  record.checkOut=time;
+
+  saveAll();
+  refreshReport();
+
+  showMessage(
+    "checkoutMessage",
+    person.name+" checked out at "+time,
+    "success"
+  );
+}
+
+/* =========================
+   QR SCANNER
+========================= */
+
+async function startScanner(type){
+
+  stopScanner();
+
+  scannerType=type;
+
+  const video=document.getElementById(type+"Video");
+  const canvas=document.getElementById(type+"Canvas");
+  const context=canvas.getContext("2d");
+
+  try{
+
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:"environment"}
+    });
+
+    video.srcObject=stream;
+
+    function scan(){
+
+      if(!stream) return;
+
+      if(video.readyState===video.HAVE_ENOUGH_DATA){
+
+        canvas.width=video.videoWidth;
+        canvas.height=video.videoHeight;
+
+        context.drawImage(
+          video,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+        const imageData=context.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+
+        const code=jsQR(
+          imageData.data,
+          imageData.width,
+          imageData.height
+        );
+
+        if(code && code.data){
+
+          handleQR(code.data);
+
+          stopScanner();
+          return;
+        }
+      }
+
+      requestAnimationFrame(scan);
+    }
+
+    requestAnimationFrame(scan);
+
+  }catch(error){
+
+    showMessage(
+      type==="checkin" ? "checkinMessage":"checkoutMessage",
+      "Camera access failed. Use the manual option instead.",
+      "error"
+    );
+  }
+}
+
+function stopScanner(){
+
+  if(stream){
+
+    stream.getTracks().forEach(track=>track.stop());
+    stream=null;
+  }
+
+  scannerType=null;
+}
+
+function handleQR(data){
+
+  let id=data;
+
+  try{
+
+    const parsed=JSON.parse(data);
+
+    if(parsed.staffId){
+      id=parsed.staffId;
+    }
+
+  }catch(e){}
+
+  const person=getStaff(id);
+
+  if(!person){
+
+    showMessa
